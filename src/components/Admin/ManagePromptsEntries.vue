@@ -234,7 +234,9 @@ const proceedDepositFundDialog = ref({})
 onMounted(async () => {
   entryStore._loadedEntries = []
   if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) await promptStore.fetchPrompts(false, 5, true)
-  await entryStore.fetchUserRelatedEntries(userStore.getUserId, true)
+  if (!entryStore.getUserRelatedEntries.length) {
+    await entryStore.fetchUserRelatedEntries(userStore.getUserId, true)
+  }
   window.addEventListener('resize', updateMaxWidth)
   updateMaxWidth()
 })

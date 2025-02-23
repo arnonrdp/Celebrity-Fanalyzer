@@ -280,8 +280,9 @@ export const usePromptStore = defineStore('prompts', {
     async addPrompt(payload) {
       const notificationStore = useNotificationStore()
       const userStore = useUserStore()
-      const isTester = payload.author.label === 'Cypress Tester'
-      const prompt = isTester ? { ...payload, escrowId: '0.0000000000000000001' } : { ...payload }
+      //const isTester = payload.author.label === 'Cypress Tester'
+      //const prompt = isTester ? { ...payload, escrowId: '0.0000000000000000001' } : { ...payload }
+      const prompt = { ...payload }
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.created = Timestamp.fromDate(new Date())
       prompt.id = prompt.date

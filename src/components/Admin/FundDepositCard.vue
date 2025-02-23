@@ -11,6 +11,7 @@
           fill-mask="0"
           reverse-fill-mask
           @update:model-value="convertToMatic()"
+          data-test="fund-deposit-usd-amount"
         />
         <!-- Displaying Corresponding Ether Amount-->
         <q-input data-text="ether-amount" v-model="maticAmount" label="Price in pol" readonly></q-input>

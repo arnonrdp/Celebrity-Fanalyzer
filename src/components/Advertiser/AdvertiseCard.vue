@@ -17,7 +17,7 @@
               <div class="flex items-center justify-between">
                 <div>Select Add type :</div>
                 <q-radio v-model="advertise.type" val="Banner" label="Banner" />
-                <q-radio v-model="advertise.type" val="Text" label="Text" />
+                <q-radio v-model="advertise.type" val="Text" label="Text" data-test="select-type-text" />
               </div>
             </div>
             <q-file
@@ -89,6 +89,7 @@
             </q-field>
             <q-input
               v-model="advertise.productLink"
+              data-test="input-product-link"
               counter
               hide-hint
               class="q-mb-lg"
@@ -105,6 +106,7 @@
               :rules="['date']"
               @click="openDatePicker"
               :hint="!advertise.publishDate ? '*Publish Date is required' : ''"
+              data-test="date"
             >
               <template v-slot:append>
                 <q-icon name="event" class="cursor-pointer">
@@ -119,6 +121,7 @@
               </template>
             </q-input>
             <q-input
+              data-test="input-duration"
               v-model.number="advertise.duration"
               label="Duration(day's)"
               :hint="!advertise.duration ? '*Duration is required' : ''"
@@ -130,12 +133,13 @@
             <q-input
               v-if="!isEditing"
               v-model="usdAmount"
+              data-test="input-budget"
               label="Price in USD"
               :hint="!usdAmount ? '*Minimum Price is required' : ''"
               mask="#.##"
               fill-mask="0"
               reverse-fill-mask
-              :rules="[() => (usdAmount < 3 ? 'Minimum allowed budget is 3 USD' : true)]"
+              :rules="[() => (usdAmount < 0.01 ? 'Minimum allowed budget is 3 USD' : true)]"
               @update:model-value="convertToMatic()"
             />
             <q-input

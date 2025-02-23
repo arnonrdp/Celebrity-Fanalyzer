@@ -15,6 +15,7 @@
     selection="multiple"
     :selected="selectedRows"
     @update:selected="onSelect"
+    data-test="user-table"
   >
     <template v-slot:top-right>
       <q-input debounce="400" data-test="query-input" dense placeholder="Search" v-model="filter">
@@ -30,37 +31,53 @@
         class="q-ml-sm"
         dense
         :disable="selectedRows.some((row) => row.role === 'Admin')"
+        data-test="delete-multiple-button"
       />
     </template>
     <template v-slot:body-selection="scope">
-      <q-checkbox v-if="scope.row.role !== 'Admin'" v-model="scope.selected" />
+      <q-checkbox v-if="scope.row.role !== 'Admin'" v-model="scope.selected" data-test="user-checkbox" />
     </template>
     <template v-slot:body-cell-role="props">
-      <q-td data-test="role-select">
-        <q-select borderless dense :options="options" v-model="props.row.role" @update:model-value="userStore.updateRole(props.row)" />
+      <q-td data-test="role-cell">
+        <q-select
+          borderless
+          dense
+          :options="options"
+          v-model="props.row.role"
+          @update:model-value="userStore.updateRole(props.row)"
+          data-test="role-select"
+        />
       </q-td>
     </template>
     <template v-slot:body-cell-actions="props">
       <q-td>
-        <q-btn flat dense icon="delete" color="negative" @click="confirmDelete(props.row)" :disable="props.row.role === 'Admin'" />
+        <q-btn
+          flat
+          dense
+          icon="delete"
+          color="negative"
+          @click="confirmDelete(props.row)"
+          :disable="props.row.role === 'Admin'"
+          data-test="delete-button"
+        />
       </q-td>
     </template>
   </q-table>
 
-  <q-dialog v-model="deleteDialog">
+  <q-dialog v-model="deleteDialog" data-test="delete-dialog">
     <q-card>
       <q-card-section>
         <div class="text-h6">Delete Confirmation</div>
       </q-card-section>
       <q-card-section>
         Are you sure you want to delete the following user(s)?
-        <ul>
-          <li v-for="user in selectedRows" :key="user.email">{{ user.displayName }}</li>
+        <ul data-test="delete-dialog-list">
+          <li v-for="user in selectedRows" :key="user.email" data-test="delete-user-item">{{ user.displayName }}</li>
         </ul>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn flat label="Cancel" color="primary" v-close-popup />
-        <q-btn flat label="Delete" color="negative" @click="deleteUsers" />
+        <q-btn flat label="Cancel" color="primary" v-close-popup data-test="cancel-delete" />
+        <q-btn flat label="Delete" color="negative" @click="deleteUsers" data-test="confirm-delete-button" />
       </q-card-actions>
     </q-card>
   </q-dialog>

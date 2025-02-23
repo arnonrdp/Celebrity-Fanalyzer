@@ -37,7 +37,15 @@
       <TheComments v-if="entry" collectionName="entries" :post="entry" />
     </q-tab-panel>
   </q-tab-panels>
-  <q-dialog full-width position="bottom" v-model="editEntry.dialog" data-test="edit-entry-dialog">
+  <q-dialog
+    full-width
+    position="bottom"
+    v-model="editEntry.dialog"
+    no-backdrop-dismiss
+    no-refocus
+    no-esc-dismiss
+    data-test="edit-entry-dialog"
+  >
     <EntryCard v-bind="editEntry" @hideDialog="closeEntryDialog" />
   </q-dialog>
 </template>
@@ -85,9 +93,9 @@ const entry = computed(() => {
   )
 })
 watchEffect(async () => {
-  // if (entry.value?.author?.uid) {
-  //   await statStore.getUserRating(entry.value?.author?.uid)
-  // }
+  if (entry.value?.author?.uid) {
+    await statStore.getUserRating(entry.value?.author?.uid)
+  }
   if (entry.value?.prompt?.id) {
     prompt.value = (await promptStore.fetchPromptById(entry.value.prompt.id))[0]
   }

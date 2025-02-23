@@ -84,11 +84,15 @@
     <q-input counter label="Bio" maxlength="1000" type="textarea" data-test="input-bio" v-model="user.bio" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
-    <q-input label="Facebook" placeholder="https://www.facebook.com/" data-test="input-facebook" v-model.trim="user.facebook" />
-    <q-input label="Instagram" placeholder="https://www.instagram.com/" data-test="input-instagram" v-model.trim="user.instagram" />
-    <q-input label="Linkedin" placeholder="https://www.linkedin.com/" data-test="input-linkedin" v-model.trim="user.linkedin" />
-    <q-input label="Telegram" placeholder="https://www.telegram.com/" data-test="input-telegram" v-model.trim="user.telegram" />
-    <q-input label="X" placeholder="https://www.x.com/" data-test="input-x" v-model.trim="user.x" />
+    <q-input
+      v-for="network in socialNetworks"
+      :key="network.name"
+      :label="capitalize(network.name)"
+      :placeholder="network.link"
+      :data-test="'input-' + network.name"
+      :model-value="user[network.name]"
+      @update:model-value="(val) => (user[network.name] = val.replace(/\s+/g, ''))"
+    />
 
     <q-btn class="full-width q-my-lg" color="primary" label="Save" padding="12px" data-test="button-submit" rounded type="submit" />
   </q-form>
@@ -192,6 +196,18 @@ const removeWalletAddressDialog = ref({ show: false })
 const isUpdate = ref(false)
 const uploadDialog = ref({ show: false })
 const previewImage = ref(null)
+
+const socialNetworks = [
+  { name: 'facebook', link: 'https://www.facebook.com/' },
+  { name: 'instagram', link: 'https://www.instagram.com/' },
+  { name: 'linkedin', link: 'https://www.linkedin.com/in/' },
+  { name: 'telegram', link: 'https://t.me/' },
+  { name: 'x', link: 'https://x.com/' }
+]
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
 
 watch([currentWalletAddress, user], () => {
   isUpdate.value = !!user.value.walletAddress

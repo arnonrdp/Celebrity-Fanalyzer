@@ -3,8 +3,14 @@ import { useStorageStore, useErrorStore } from 'src/stores'
 export async function uploadAndSetImage(imageFile, filePathAndName) {
   const storageStore = useStorageStore()
   const errorStore = useErrorStore()
-
   return new Promise((resolve, reject) => {
+    // Validate imageFile
+    if (!(imageFile instanceof Blob)) {
+      const errorMessage = 'Invalid file type. Expected a Blob or File.'
+      console.error(errorMessage, imageFile)
+      return reject(new Error(errorMessage))
+    }
+
     const reader = new FileReader()
 
     reader.onload = async (event) => {
@@ -22,8 +28,8 @@ export async function uploadAndSetImage(imageFile, filePathAndName) {
           const heightRatio = MAX_HEIGHT / height
           const ratio = Math.min(widthRatio, heightRatio)
 
-          width = width * ratio
-          height = height * ratio
+          width *= ratio
+          height *= ratio
         }
 
         const canvas = document.createElement('canvas')

@@ -16,7 +16,7 @@
     <q-spinner v-if="entryStore.isLoading" color="primary" size="3em" class="block q-mx-auto q-my-xl" />
     <h6 v-else-if="!entries?.length" class="text-center">NO ENTRIES</h6>
   </section>
-  <q-dialog full-width position="bottom" v-model="entry.dialog" data-test="entry-dialog">
+  <q-dialog full-width position="bottom" v-model="entry.dialog" no-backdrop-dismiss no-refocus no-esc-dismiss data-test="entry-dialog">
     <EntryCard v-bind="entry" @hideDialog="entry = {}" :selectedPromptDate="promptDate" />
   </q-dialog>
 </template>

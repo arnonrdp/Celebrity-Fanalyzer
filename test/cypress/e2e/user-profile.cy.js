@@ -40,17 +40,17 @@ describe('User Profile page', () => {
     cy.get('[data-test="input-instagram"]').clear()
     cy.get('[data-test="input-instagram"]').type('https://www.instagram.com/cypresstester')
 
-    // Get the linkedin input and type 'https://www.linkedin.com/cypresstester' into it
+    // Get the linkedin input and type 'https://www.linkedin.com/in/cypresstester' into it
     cy.get('[data-test="input-linkedin"]').clear()
-    cy.get('[data-test="input-linkedin"]').type('https://www.linkedin.com/cypresstester')
+    cy.get('[data-test="input-linkedin"]').type('https://www.linkedin.com/in/cypresstester')
 
-    // Get the telegram input and type 'https://www.telegram.com/cypresstester' into it
+    // Get the telegram input and type 'https://www.t.me/cypresstester' into it
     cy.get('[data-test="input-telegram"]').clear()
-    cy.get('[data-test="input-telegram"]').type('https://www.telegram.com/cypresstester')
+    cy.get('[data-test="input-telegram"]').type('https://t.me/cypresstester')
 
-    // Get the X input and type 'https://www.x.com/cypresstester' into it
+    // Get the X input and type 'https://x.com/cypresstester' into it
     cy.get('[data-test="input-x"]').clear()
-    cy.get('[data-test="input-x"]').type('https://www.x.com/cypresstester')
+    cy.get('[data-test="input-x"]').type('https://x.com/cypresstester')
 
     // Get the submit button and click it
     cy.get('[data-test="button-submit"] > .q-btn__content').click()
@@ -195,6 +195,27 @@ describe('User Profile page', () => {
         // Wait for "no notifications" message to appear
         cy.get('[data-test="no-notifications-message"]', { timeout: 10000 }).should('be.visible')
       }
+    })
+  })
+
+  it('should redirect to social network links correctly in user publicprofile page', () => {
+    // Visit user publicprofile page
+    cy.visit('/fan/Cypress Tester')
+
+    const socialNetworks = [
+      { name: 'facebook', link: 'https://www.facebook.com/cypresstester' },
+      { name: 'instagram', link: 'https://www.instagram.com/cypresstester' },
+      { name: 'linkedin', link: 'https://www.linkedin.com/in/cypresstester' },
+      { name: 'telegram', link: 'https://t.me/cypresstester' },
+      { name: 'x', link: 'https://x.com/cypresstester' }
+    ]
+
+    socialNetworks.forEach((socialNetwork) => {
+      // Assert the URL of the current the button
+      cy.get(`[data-test="${socialNetwork.name}-btn"]`, { timeout: 15000 })
+        .should('be.visible')
+        .should('have.attr', 'href')
+        .and('include', socialNetwork.link)
     })
   })
 })

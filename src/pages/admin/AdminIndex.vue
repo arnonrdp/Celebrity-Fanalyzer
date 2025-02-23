@@ -60,7 +60,7 @@
         <PromptCard v-bind="prompt" @hideDialog="prompt = {}" data-test="prompt-card" />
       </q-dialog>
 
-      <q-dialog full-width position="bottom" v-model="entry.dialog" data-test="entry-dialog">
+      <q-dialog full-width position="bottom" v-model="entry.dialog" no-backdrop-dismiss no-refocus no-esc-dismiss data-test="entry-dialog">
         <EntryCard v-bind="entry" @hideDialog="entry = {}" data-test="entry-card" />
       </q-dialog>
 

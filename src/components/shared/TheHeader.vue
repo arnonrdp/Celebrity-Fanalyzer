@@ -89,7 +89,7 @@
       <PromptCard v-bind="prompt" @hideDialog="prompt = {}" />
     </q-dialog>
 
-    <q-dialog full-width position="bottom" v-model="entry.dialog">
+    <q-dialog full-width position="bottom" v-model="entry.dialog" no-backdrop-dismiss no-refocus no-esc-dismiss>
       <EntryCard v-bind="entry" @hideDialog="entry = {}" />
     </q-dialog>
 

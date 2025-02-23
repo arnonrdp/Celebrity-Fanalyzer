@@ -38,6 +38,7 @@
         <template #body-cell-action="props">
           <q-td :props="props">
             <q-icon
+              data-test="withdraw-amount"
               v-if="
                 userStore.getUser.role === 'Admin' &&
                 props.row.campaignCode?.length > 5 &&
@@ -67,6 +68,7 @@
               name="free_cancellation"
               size="18px"
               label=""
+              data-test="withdraw-remaining-budget"
               class="q-mr-sm cursor-pointer"
               :disable="userStore.getUser.role !== 'Advertiser' && userStore.getUser.email !== props.row.author.email"
               @click="onWithdrawRemainingBudgetDialog(props.row)"
@@ -99,6 +101,7 @@
             <q-icon
               v-if="computedDuration(props.row.endDate) >= 0"
               name="edit"
+              data-test="edit-icon"
               color="blue"
               size="18px"
               class="cursor-pointer q-mr-sm"
@@ -106,7 +109,14 @@
             >
               <q-tooltip>Edit</q-tooltip>
             </q-icon>
-            <q-icon name="delete" color="red" size="18px" @click="openDeleteDialog(props.row.id, props.row.type)" class="cursor-pointer">
+            <q-icon
+              data-test="delete-icon"
+              name="delete"
+              color="red"
+              size="18px"
+              @click="openDeleteDialog(props.row.id, props.row.type)"
+              class="cursor-pointer"
+            >
               <q-tooltip>Delete</q-tooltip>
             </q-icon>
           </q-td>
@@ -179,7 +189,7 @@
             <q-btn flat label="No" color="primary" v-close-popup @click="onDeselect" />
           </template>
           <template v-else-if="dialog.type === 'DeleteCampaign'">
-            <q-btn flat label="Yes" color="primary" v-close-popup @click="onDeleteAdvertise" />
+            <q-btn flat label="Yes" data-test="confirm-delete-campaign-btn" color="primary" v-close-popup @click="onDeleteAdvertise" />
             <q-btn flat label="No" color="primary" v-close-popup @click="onDeselect" />
           </template>
           <template v-else-if="dialog.type === 'ApproveCampaign'">
@@ -202,6 +212,7 @@
           <q-btn flat label="Cancel" color="primary" v-close-popup />
           <q-btn
             flat
+            data-test="confirm-withdraw-amount-button"
             label="Confirm"
             color="negative"
             @click="_claimPayment(withdrawAmountSpentDialog.advertise, withdrawAmountSpentDialog.currentAmountSpent)"
@@ -219,7 +230,7 @@
         <q-card-actions align="right">
           <q-btn flat label="Cancel" color="primary" v-close-popup />
           <q-btn
-            data-test="delete-button"
+            data-test="confirm-withdraw-remaining-button"
             flat
             label="Confirm"
             color="negative"
@@ -375,33 +386,39 @@ async function onWithdrawRemainingBudgetDialog(advertise) {
 }
 
 async function onwithdrawAmountSpentDialog(advertise) {
-  if (advertise?.campaignCode) {
-    $q.loading.show()
-    const currentAmountSpent = await calculateAmountSpent(advertise)
-    const adEvents = await getEventsForCampaign(advertise.campaignCode)
-    let releasedAmount = 0
-    let unclaimedAmount = 0
-    if (adEvents.status.includes('success')) {
-      if (adEvents.events.paymentReleasedEvents) {
-        adEvents.events.paymentReleasedEvents.forEach((paymentReleasedEvent) => {
-          releasedAmount += parseFloat(paymentReleasedEvent.amount)
-        })
-      }
-    }
-    unclaimedAmount = parseFloat(currentAmountSpent - releasedAmount).toFixed(3)
-
-    if (unclaimedAmount > 0) {
-      withdrawAmountSpentDialog.value.advertise = advertise
-      withdrawAmountSpentDialog.value.unclaimedAmount = unclaimedAmount
-      withdrawAmountSpentDialog.value.currentAmountSpent = currentAmountSpent
-      withdrawAmountSpentDialog.value.show = true
-    } else {
-      $q.notify({ message: 'The curent balance to claim should be greater than zero' })
-    }
+  if (!customWeb3modal.getAddress()) {
+    $q.notify({ type: 'negative', message: 'Please connect your wallet and try again' })
+    customWeb3modal.open()
+    $q.loading.hide()
   } else {
-    $q.notify({ message: 'No campaign code associated', type: 'negative' })
+    if (advertise?.campaignCode) {
+      $q.loading.show()
+      const currentAmountSpent = await calculateAmountSpent(advertise)
+      const adEvents = await getEventsForCampaign(advertise.campaignCode)
+      let releasedAmount = 0
+      let unclaimedAmount = 0
+      if (adEvents.status.includes('success')) {
+        if (adEvents.events.paymentReleasedEvents) {
+          adEvents.events.paymentReleasedEvents.forEach((paymentReleasedEvent) => {
+            releasedAmount += parseFloat(paymentReleasedEvent.amount)
+          })
+        }
+      }
+      unclaimedAmount = parseFloat(currentAmountSpent - releasedAmount).toFixed(3)
+
+      if (unclaimedAmount > 0) {
+        withdrawAmountSpentDialog.value.advertise = advertise
+        withdrawAmountSpentDialog.value.unclaimedAmount = unclaimedAmount
+        withdrawAmountSpentDialog.value.currentAmountSpent = currentAmountSpent
+        withdrawAmountSpentDialog.value.show = true
+      } else {
+        $q.notify({ message: 'The curent balance to claim should be greater than zero' })
+      }
+    } else {
+      $q.notify({ message: 'No campaign code associated', type: 'negative' })
+    }
+    $q.loading.hide()
   }
-  $q.loading.hide()
 }
 
 async function _claimPayment(advertise, currentAmountSpent) {

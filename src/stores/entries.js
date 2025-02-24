@@ -91,6 +91,7 @@ export const useEntryStore = defineStore('entries', {
 
     async fetchUserRelatedEntries(userId) {
       const userStore = useUserStore()
+      const promptStore = usePromptStore()
 
       try {
         this._isLoading = true
@@ -101,6 +102,9 @@ export const useEntryStore = defineStore('entries', {
 
         for (const entry of entries) {
           const promptId = entry.prompt.id
+          entry.prompt = await promptStore.fetchPromptById(promptId)
+          const promptArray = await promptStore.fetchPromptById(promptId)
+          entry.prompt = promptArray[0] || {}
           if (entry.author.id) {
             entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
           }

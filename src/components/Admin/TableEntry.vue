@@ -8,7 +8,7 @@
     :bordered="!userStore.isEditorOrAbove"
     :hide-header="userStore.isEditorOrAbove"
     :pagination="pagination"
-    :rows="rows"
+    :rows="rowData"
     :title="!userStore.isEditorOrAbove ? 'Manage Entries' : ''"
     no-data-label="No entries found."
     data-test="entry-table"
@@ -53,7 +53,7 @@
           </a>
         </q-td>
         <q-td class="text-right">
-          <span v-if="_currentPrompt?.escrowId || props.row?.isWinner">
+          <span v-if="_currentPrompt?.escrowId || (userRelatedTable && props.row.prompt.hasWinner !== true)">
             <q-btn
               class="payment-buttons"
               v-if="
@@ -99,7 +99,7 @@
               <q-tooltip class="positive" :offset="[10, 10]">View transaction detail</q-tooltip>
             </q-btn>
 
-            <span v-if="_currentPrompt?.hasWinner !== true">
+            <span v-if="_currentPrompt?.hasWinner !== true || (userRelatedTable && props.row.prompt.hasWinner !== true)">
               <span v-if="props.row.isWinner !== true">
                 <q-btn
                   v-if="userStore.isEditorOrAbove || userStore.getUser.uid === props.row.author.uid"
@@ -213,7 +213,7 @@
 import { useQuasar } from 'quasar'
 import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore } from 'src/stores'
 import { dayMonthYear, shortMonthDayTime } from 'src/utils/date'
-import { nextTick, onMounted, ref, watch, watchEffect } from 'vue'
+import { nextTick, onMounted, ref, watch, watchEffect, computed } from 'vue'
 import EntryCard from './EntryCard.vue'
 import WalletPaymentCard from './WalletPaymentCard.vue'
 import CryptoTransactionDetailCard from './CryptoTransactionDetailCard.vue'
@@ -228,7 +228,8 @@ const props = defineProps({
   rows: { type: Array, required: true, default: () => [] },
   currentPrompt: { type: Object },
   loadedEntries: { type: Array, default: () => [] },
-  maxWidth: { type: Number, required: false }
+  maxWidth: { type: Number, required: false },
+  userRelatedTable: { type: Boolean, default: false }
 })
 
 const widthStyle = ref({ width: `${props.maxWidth}px` })
@@ -282,9 +283,16 @@ const proceedPaymentDialog = ref({})
 const displayCrytptoTransactionDialog = ref({})
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
-function onEditDialog(props) {
-  entry.value = props
-  entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === props.id.split('T')[0])
+const rowData = computed(() => (props.userRelatedTable ? entryStore.getUserRelatedEntries ?? [] : props.rows))
+
+function onEditDialog(data) {
+  entry.value = data
+  if (props.userRelatedTable) {
+    entry.value.prompt = data.prompt
+  } else {
+    entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === data.id.split('T')[0] || prompt.id === data.prompt.id)
+  }
+
   entry.value.dialog = true
 }
 

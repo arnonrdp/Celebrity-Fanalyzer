@@ -24,8 +24,10 @@
         style="padding-bottom: 7rem"
         :isEntry="true"
         :showEdit="!prompt?.hasWinner && userStore.getUserId === entry.author.uid"
+        :showDelete="!prompt?.hasWinner && userStore.getUserId === entry.author.uid"
         @clickComments="tab = 'comments'"
         @openEntryDialog="openEntryDialog"
+        @onEntryDelete="onEntryDelete"
       />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
@@ -47,6 +49,30 @@
     data-test="edit-entry-dialog"
   >
     <EntryCard v-bind="editEntry" @hideDialog="closeEntryDialog" />
+  </q-dialog>
+  <q-dialog v-model="deleteEntry.show" data-test="entry-delete-dialog">
+    <q-card>
+      <q-card-section class="q-pb-none">
+        <h6 class="q-my-sm">Delete Entry?</h6>
+      </q-card-section>
+      <q-card-section>
+        <span class="q-ml-sm">
+          Are you sure you want to delete the entry:
+          <b>{{ deleteEntry.entry.title }}</b>
+          ?
+        </span>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn color="primary" flat label="Cancel" v-close-popup />
+        <q-btn
+          color="negative"
+          data-test="confirm-delete-entry"
+          flat
+          label="Delete"
+          @click="onDeleteEntry(deleteEntry.entry.id, deleteEntry.entry.prompt.id, deleteEntry.entry.showcase.arts)"
+        />
+      </q-card-actions>
+    </q-card>
   </q-dialog>
 </template>
 
@@ -81,6 +107,7 @@ const promptStore = usePromptStore()
 const userStore = useUserStore()
 const tab = ref(entryStore.tab)
 const editEntry = ref({})
+const deleteEntry = ref({})
 const prompt = ref({})
 
 let entryId
@@ -129,6 +156,32 @@ async function openEntryDialog() {
   editEntry.value = entry.value
   editEntry.value.prompt = prompt
   editEntry.value.dialog = true
+}
+
+function onEntryDelete() {
+  deleteEntry.value.show = true
+  deleteEntry.value.entry = entry.value
+}
+
+function onDeleteEntry(entryId, promptId, arts) {
+  entryStore
+    .deleteEntry(entryId, arts)
+    .then(() => {
+      if (!userStore.isEditorOrAbove) {
+        entryStore.fetchUserRelatedEntries(userStore.getUserId)
+      } else if (userStore.isEditorOrAbove) {
+        emit('delete-entry', entryId, promptId)
+        setTimeout(() => {
+          router.go(-1)
+        }, 1000)
+      }
+    })
+    .then(() => $q.notify({ type: 'positive', message: 'Entry deleted' }))
+    .catch((error) => {
+      $q.notify({ type: 'negative', message: 'Error deleting entry' })
+      errorStore.throwError(error, 'Error deleting entry')
+    })
+  deleteEntry.value.show = false
 }
 
 function closeEntryDialog(slug) {

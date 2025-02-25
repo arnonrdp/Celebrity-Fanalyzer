@@ -6,7 +6,7 @@
   >
     <div class="flex items-center">
       <h2 class="q-my-auto text-bold text-h5 q-pa-md">Entries</h2>
-      <q-btn v-if="showAddEntry" color="primary" dense icon="add" outline round @click="openEntryDialog">
+      <q-btn v-if="showAddEntry" color="primary" dense icon="add" outline round data-test="create-entry" @click="openEntryDialog">
         <q-tooltip>Create entry</q-tooltip>
       </q-btn>
     </div>
@@ -16,7 +16,7 @@
     <q-spinner v-if="entryStore.isLoading" color="primary" size="3em" class="block q-mx-auto q-my-xl" />
     <h6 v-else-if="!entries?.length" class="text-center">NO ENTRIES</h6>
   </section>
-  <q-dialog full-width position="bottom" v-model="entry.dialog">
+  <q-dialog full-width position="bottom" v-model="entry.dialog" no-backdrop-dismiss no-refocus no-esc-dismiss data-test="entry-dialog">
     <EntryCard v-bind="entry" @hideDialog="entry = {}" :selectedPromptDate="promptDate" />
   </q-dialog>
 </template>

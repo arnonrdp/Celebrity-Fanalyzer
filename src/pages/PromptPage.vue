@@ -106,9 +106,9 @@ watchEffect(() => {
 })
 
 watchEffect(async () => {
-  if (prompt?.value?.author?.uid) {
-    await statStore.getUserRating(prompt?.value?.author?.uid)
-  }
+  // if (prompt?.value?.author?.uid) {
+  //   await statStore.getUserRating(prompt?.value?.author?.uid)
+  // }
 
   if (prompt.value?.id) {
     await likeStore.getAllLikesDislikes('prompts', promptId).catch((error) => errorStore.throwError(error))
@@ -165,7 +165,7 @@ onUnmounted(async () => {
     console.error('Error adding stats:', e)
   } finally {
     statStore.resetStats()
-    statStore.resetUserRating()
+    // statStore.resetUserRating()
     statStore.resetPostImpressions()
   }
 

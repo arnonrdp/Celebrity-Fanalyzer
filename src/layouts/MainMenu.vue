@@ -5,7 +5,13 @@
         <q-tooltip class="text-center" style="white-space: pre-line">{{ route?.tooltip }}</q-tooltip>
       </q-route-tab>
 
-      <q-route-tab class="adminTab" v-if="userStore.isAuthenticated" icon="admin_panel_settings" @click="onAdminTabClick">
+      <q-route-tab
+        class="adminTab"
+        v-if="userStore.isAuthenticated"
+        icon="admin_panel_settings"
+        @click="onAdminTabClick"
+        data-test="admin-tab"
+      >
         <q-tooltip>{{ userStore.getUser?.role + ' ' + 'Panel' }}</q-tooltip>
       </q-route-tab>
       <div class="q-tab__indicator absolute-top"></div>

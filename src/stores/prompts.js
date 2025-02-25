@@ -107,7 +107,6 @@ export const usePromptStore = defineStore('prompts', {
         } else {
           queryRef = query(queryRef, orderBy('id', 'desc'), limit(limitCount))
         }
-
         const querySnapshot = await getDocs(queryRef)
         const newPrompts = await getPrompts(querySnapshot, userStore)
 

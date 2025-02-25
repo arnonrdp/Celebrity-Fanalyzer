@@ -1,12 +1,12 @@
 <template>
   <q-page>
-    <q-card class="fixed-center q-mx-auto" style="width: 25rem; max-width: 90vw">
-      <q-tabs class="text-primary" v-model="tab">
+    <q-card class="fixed-center q-mx-auto" style="width: 25rem; max-width: 90vw" data-test="auth-card">
+      <q-tabs class="text-primary" v-model="tab" data-test="auth-tabs">
         <q-tab data-test="signin-tab" label="Sign In" name="signin" />
         <q-tab data-test="signup-tab" label="Sign Up" name="signup" />
       </q-tabs>
 
-      <q-form class="q-px-md q-pt-md text-center" :class="{ 'q-pb-md': tab === 'signup' }" greedy @submit="emailSign">
+      <q-form class="q-px-md q-pt-md text-center" :class="{ 'q-pb-md': tab === 'signup' }" greedy @submit="emailSign" data-test="auth-form">
         <q-input
           v-if="tab === 'signup'"
           data-test="name-field"
@@ -35,7 +35,7 @@
           v-model="user.username"
         >
           <template #append>
-            <q-icon v-if="isUserNameAvailable" name="check_circle" color="green" />
+            <q-icon v-if="isUserNameAvailable" data-test="username-available-icon" name="check_circle" color="green" />
           </template>
         </q-input>
         <q-input
@@ -52,6 +52,7 @@
           <template v-slot:append>
             <q-icon
               :name="isVisibleOn ? 'visibility' : 'visibility_off'"
+              data-test="password-visibility-icon"
               @click.stop.prevent="text = null"
               class="cursor-pointer"
               @click="toggleVisibility"
@@ -66,39 +67,49 @@
         size="sm"
         v-if="tab !== 'signup'"
         class="forgot-pass"
-        label="forgot password?"
+        data-test="forgot-password-button"
+        label="Forgot Password?"
         @click="openResetDialog = true"
       />
-      <q-separator inset />
+      <q-separator inset data-test="form-separator" />
 
-      <div class="column items-center q-gutter-md q-py-md">
+      <div class="column items-center q-gutter-md q-py-md" data-test="social-login-section">
         <q-btn data-test="google-button" icon="img:/icons/google.svg" label="Sign with Google" rounded @click="googleSign" />
       </div>
     </q-card>
-  </q-page>
-  <q-dialog v-model="openResetDialog">
-    <q-card style="width: 400px">
-      <q-card-section>
-        <div class="text-h6">Reset Password</div>
-      </q-card-section>
-      <q-card-section class="row items-center">
-        <q-input
-          class="full-width"
-          data-test="email-field"
-          label="Enter your email"
-          lazy-rules
-          required
-          :rules="[(val, rules) => rules.email(val) || 'Invalid Email']"
-          v-model="user.email"
-        />
-      </q-card-section>
 
-      <q-card-actions align="right">
-        <q-btn flat label="Cancel" color="primary" v-close-popup />
-        <q-btn flat label="Ok" color="primary" v-close-popup @click="handleResetPassword" :disable="!validateEmail(user.email)" />
-      </q-card-actions>
-    </q-card>
-  </q-dialog>
+    <q-dialog v-model="openResetDialog" data-test="reset-password-dialog">
+      <q-card style="width: 400px" data-test="reset-password-card">
+        <q-card-section>
+          <div class="text-h6" data-test="reset-password-title">Reset Password</div>
+        </q-card-section>
+        <q-card-section class="row items-center">
+          <q-input
+            class="full-width"
+            data-test="reset-email-field"
+            label="Enter your email"
+            lazy-rules
+            required
+            :rules="[(val, rules) => rules.email(val) || 'Invalid Email']"
+            v-model="user.email"
+          />
+        </q-card-section>
+
+        <q-card-actions align="right" data-test="reset-card-actions">
+          <q-btn flat label="Cancel" color="primary" v-close-popup data-test="reset-cancel-button" />
+          <q-btn
+            flat
+            label="Ok"
+            color="primary"
+            v-close-popup
+            @click="handleResetPassword"
+            :disable="!validateEmail(user.email)"
+            data-test="reset-submit-button"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </q-page>
 </template>
 
 <script setup>

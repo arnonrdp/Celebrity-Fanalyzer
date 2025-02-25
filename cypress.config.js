@@ -7,7 +7,7 @@ module.exports = defineConfig({
   fixturesFolder: 'test/cypress/fixtures',
   screenshotsFolder: 'test/cypress/screenshots',
   videosFolder: 'test/cypress/videos',
-  video: true,
+  video: false,
   watchForFileChanges: false,
   defaultCommandTimeout: 90000,
   retries: {
@@ -25,7 +25,13 @@ module.exports = defineConfig({
     },
     baseUrl: 'http://localhost:9200/',
     supportFile: 'test/cypress/support/e2e.js',
-    specPattern: 'test/cypress/e2e/**/*.cy.{js,jsx,ts,tsx}'
+    specPattern: 'test/cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
+    defaultCommandTimeout: 25000,
+    pageLoadTimeout: 60000,
+    retries: {
+      runMode: 2,
+      openMode: 0
+    }
   },
   component: {
     setupNodeEvents(on, config) {

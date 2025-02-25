@@ -28,7 +28,7 @@ const getProvider = async () => {
 const getContractInstance = async () => {
   const provider = await getProvider()
   const signer = provider.getSigner()
-  const contractAddress = import.meta.env.VITE_ESCROW_DEPLOYED_CONTRACT_ON_POLYGON_MAINET
+  const contractAddress = import.meta.env.VITE_ESCROW_CONTRACT
   return new ethers.Contract(contractAddress, CompetitionEscrow.abi, signer)
 }
 

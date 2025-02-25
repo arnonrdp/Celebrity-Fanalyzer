@@ -4,9 +4,10 @@ import {
   GoogleAuthProvider,
   signInWithEmailAndPassword,
   signInWithPopup,
-  signOut
+  signOut,
+  getAuth
 } from 'firebase/auth'
-import { collection, doc, getDoc, getDocs, onSnapshot, or, query, runTransaction, setDoc, where } from 'firebase/firestore'
+import { collection, doc, deleteDoc, getDoc, getDocs, onSnapshot, or, query, runTransaction, setDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage, Notify } from 'quasar'
 import sha1 from 'sha1'
@@ -14,6 +15,7 @@ import { auth, db } from 'src/firebase'
 import { baseURL } from 'stores/stats'
 import { mock_layer8_interceptor } from 'mock_layer8_module'
 import { useWalletStore } from 'stores/wallet'
+import { getFunctions, httpsCallable } from 'firebase/functions'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -222,10 +224,34 @@ export const useUserStore = defineStore('user', {
 
     setProfileTab(tab) {
       this.$patch({ _profileTab: tab })
-    }
+    },
+
+    async deleteUser(uid) {
+      this._isLoading = true
+      try {
+        const functions = getFunctions()
+        const deleteUserFunction = httpsCallable(functions, 'deleteUser')
+        await deleteUserFunction({ uid })
+
+        Notify.create({
+          color: 'positive',
+          message: 'User deleted successfully'
+        })
+
+        this._users = this._users.filter((user) => user.uid !== uid)
+      } catch (error) {
+        console.error('Error deleting user: ', error)
+        Notify.create({
+          color: 'negative',
+          message: 'Error deleting user. Please try again.'
+        })
+      } finally {
+        this._isLoading = false
+      }
+    },
 
     // async addAllUsers(users) {
-    //   await fetch(`${baseURL}/add-all-users`, {
+    //   await fetch(${baseURL}/add-all-users, {
     //     method: 'POST',
     //     headers: {
     //       'Content-Type': 'application/json'
@@ -235,10 +261,49 @@ export const useUserStore = defineStore('user', {
     // },
 
     // async getStatsUsers() {
-    //   const allUsers = await mock_layer8_interceptor.fetch(`${baseURL}/users`, {
+    //   const allUsers = await mock_layer8_interceptor.fetch(${baseURL}/users, {
     //     method: 'GET'
     //   })
     //   this._statsUsers = await allUsers.json()
     // }
+
+    async deleteOwnAccount() {
+      this._isLoading = true
+      try {
+        const currentUser = getAuth().currentUser
+        if (!currentUser) {
+          throw new Error('User is not authenticated.')
+        }
+
+        const userDocRef = doc(db, 'users', currentUser.uid)
+        await deleteDoc(userDocRef)
+
+        await currentUser.delete()
+
+        Notify.create({
+          color: 'positive',
+          message: 'Your account has been deleted successfully.'
+        })
+
+        this.$reset()
+        LocalStorage.remove('user')
+      } catch (error) {
+        console.error('Error deleting account:', error)
+
+        if (error.code === 'auth/requires-recent-login') {
+          Notify.create({
+            color: 'negative',
+            message: 'Please log in again to delete your account.'
+          })
+        } else {
+          Notify.create({
+            color: 'negative',
+            message: 'Failed to delete your account. Please try again later.'
+          })
+        }
+      } finally {
+        this._isLoading = false
+      }
+    }
   }
 })

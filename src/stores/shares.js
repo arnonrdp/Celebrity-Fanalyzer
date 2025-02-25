@@ -47,6 +47,7 @@ export const useShareStore = defineStore('shares', {
 
     async fetchSharesStats(collectionName, documentId) {
       try {
+        this._isLoading = true
         const sharesCollection = collection(db, collectionName, documentId, 'shares')
         const querySnapshot = await getDocs(sharesCollection)
         this._sharesStats = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))

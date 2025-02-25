@@ -1,7 +1,9 @@
 <template>
-  <q-btn color="secondary" dense flat icon="notifications" round size="1rem">
+  <q-btn color="secondary" dense flat icon="notifications" round size="1rem" data-test="notification-bubble-btn">
     <q-tooltip>Notifications</q-tooltip>
-    <q-badge v-if="unreadNotifications.length" color="red" floating rounded>{{ unreadNotifications.length }}</q-badge>
+    <q-badge v-if="unreadNotifications.length" color="red" floating rounded data-test="notification-badge">
+      {{ unreadNotifications.length }}
+    </q-badge>
     <q-menu v-if="notificationStore.getNotifications.length" anchor="bottom right" self="top right">
       <q-separator spaced />
       <q-item style="min-width: 320px">
@@ -12,7 +14,12 @@
           <q-btn color="primary" dense label="Clear all" outline @click="deleteAll" />
         </q-item-section>
       </q-item>
-      <q-item v-for="notification in notificationStore.getNotifications" class="non-selectable" :key="notification.id">
+      <q-item
+        v-for="notification in notificationStore.getNotifications"
+        class="non-selectable"
+        :key="notification.id"
+        data-test="notification-item"
+      >
         <q-item-section side>
           <q-icon
             class="cursor-pointer"
@@ -20,18 +27,21 @@
             name="circle"
             size="0.75rem"
             @click="markOneAsRead(notification.id)"
+            data-test="notification-read-icon"
           />
         </q-item-section>
-        <q-item-section class="cursor-pointer" @click="goToLink(notification)">{{ notification.message }}</q-item-section>
+        <q-item-section class="cursor-pointer" @click="goToLink(notification)" data-test="notification-message">
+          {{ notification.message }}
+        </q-item-section>
         <q-item-section side>
-          <q-btn flat icon="clear" round size="sm" @click="deleteOne(notification.id)" />
+          <q-btn flat icon="clear" round size="sm" @click="deleteOne(notification.id)" data-test="notification-clear-btn" />
         </q-item-section>
       </q-item>
     </q-menu>
     <q-menu v-else>
       <q-item>
         <q-item-section class="text-center">
-          <p class="q-my-sm text-body2">There are no notifications</p>
+          <p class="q-my-sm text-body2" data-test="no-notifications-message">There are no notifications</p>
         </q-item-section>
       </q-item>
     </q-menu>

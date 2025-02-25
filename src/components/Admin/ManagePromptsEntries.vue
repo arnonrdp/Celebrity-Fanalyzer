@@ -21,7 +21,7 @@
       </q-input>
     </template>
     <template v-slot:body="props">
-      <q-tr class="new" :data-test="props.key" :props="props" id="item-card">
+      <q-tr class="new" data-test="item-card" :props="props" id="item-card">
         <q-td auto-width>
           <q-btn
             dense
@@ -45,12 +45,17 @@
           </div>
         </q-td>
         <q-td class="authorRef text-center">
-          <a :href="`/fan/${props.row?.author?.uid}`" class="q-mr-sm" @click.prevent="router.push(`/fan/${props.row?.author?.uid}`)">
+          <a
+            :href="`/fan/${props.row?.author?.uid}`"
+            class="q-mr-sm"
+            data-test="author-name"
+            @click.prevent="router.push(`/fan/${props.row?.author?.uid}`)"
+          >
             {{ props.row.author?.displayName }}
           </a>
         </q-td>
         <q-td>
-          <a :href="props.row?.slug" class="q-mr-sm" @click.prevent="router.push(props.row?.slug)">
+          <a :href="props.row?.slug" class="q-mr-sm" data-test="prompt-title" @click.prevent="router.push(props.row?.slug)">
             {{ props.row.title }}
           </a>
         </q-td>
@@ -358,6 +363,9 @@ function getOrigin(slug) {
   return window.origin + slug
 }
 
+// if (window.Cypress) {
+//   console.log(window)
+// }
 watch(filter, async (newSearch) => {
   if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
     if (newSearch.trim()) {

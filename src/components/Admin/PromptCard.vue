@@ -40,15 +40,16 @@
                 >
                   <template v-slot:append>
                     <q-icon name="event" class="cursor-pointer" data-test="date-picker">
-                      <q-popup-proxy cover transition-show="scale" transition-hide="scale">
+                      <q-popup-proxy cover transition-show="scale" transition-hide="scale" data-test="month-picker-popup">
                         <MonthPicker
                           v-model="prompt.date"
                           mask="YYYY-MM"
                           navigation-min-year-month="2023-11"
                           :options="unavailablePromptsMonth"
+                          data-test="month-picker"
                         >
                           <div class="row items-center justify-end">
-                            <q-btn v-close-popup label="Close" color="primary" flat data-test="close" />
+                            <q-btn v-close-popup label="Close" color="primary" flat data-test="close-btn" />
                           </div>
                         </MonthPicker>
                       </q-popup-proxy>
@@ -127,7 +128,14 @@
                   </q-file>
                 </div>
                 <div class="col-1 flex justify-center items-center"><p>or</p></div>
-                <q-btn color="primary" icon="add_a_photo" class="self-center" label="Capture Image" @click="openCamera = true"></q-btn>
+                <q-btn
+                  color="primary"
+                  icon="add_a_photo"
+                  class="self-center"
+                  label="Capture Image"
+                  data-test="button-camera-capture"
+                  @click="openCamera = true"
+                ></q-btn>
               </div>
               <q-select
                 behavior="menu"
@@ -165,7 +173,7 @@
               <q-skeleton type="rect" class="q-mr-md" style="height: 40px; width: 120px" />
             </template>
             <template v-else>
-              <q-btn flat rounded label="Cancel" v-close-popup :disable="promptStore.isLoading" />
+              <q-btn flat rounded label="Cancel" v-close-popup :disable="promptStore.isLoading" data-test="button-cancel" />
               <q-btn
                 color="primary"
                 data-test="button-submit"

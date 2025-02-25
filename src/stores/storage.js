@@ -26,6 +26,17 @@ export const useStorageStore = defineStore('storage', {
 
       this._isLoading = true
       await deleteObject(storageRef).finally(() => (this._isLoading = false))
+    },
+
+    async deleteMultipleFiles(arrayOfPaths) {
+      try {
+        for (const art of arrayOfPaths) {
+          const imgId = art.match(/entry-[^?\/]+/)
+          await deleteObject(ref(storage, `images/${imgId}`))
+        }
+      } catch (e) {
+        console.error(e)
+      }
     }
   }
 })

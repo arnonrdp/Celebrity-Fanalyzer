@@ -18,7 +18,6 @@ Why did you choose to make these changes? Were there any trade-offs you had to c
 ### 🧪 All Test Suites Passed?
 
 - [ ] Manual tested
-- [ ] Vitest
 - [ ] Cypress
 
 ### 📸 Screenshots (optional)

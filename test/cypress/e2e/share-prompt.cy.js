@@ -32,12 +32,15 @@ describe('Sharing a Prompt', () => {
     cy.get('.q-card > .row > :nth-child(1) > img').should('be.visible').click()
 
     // Select the amount of shares to see if its value is greater than 0
-    cy.get('[data-test="share-button"] > .q-btn__content > .block').invoke('text').then(parseFloat).should('be.greaterThan', initialValue)
+    cy.get('[data-test="share-button"] > .q-btn__content > .block', { timeout: 10000 })
+      .invoke('text')
+      .then(parseFloat)
+      .should('be.greaterThan', initialValue)
 
     // Selects the second card on the page and clicks it
     cy.get('[data-test="graph-tab"]').click({ force: true })
 
     // Selects the second canvas on the page and checks to see if it is visible
-    // cy.get('canvas').eq(1).should('be.visible')
+    cy.get('canvas').eq(1).should('be.visible')
   })
 })

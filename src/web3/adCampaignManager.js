@@ -233,3 +233,23 @@ export const getEventsForCampaign = async (campaignCode) => {
     return { status: 'error', error: { message: errorMessage } }
   }
 }
+
+// New function to retrieve costPerClick, costPerImpression, and bankContractAddress
+export const getAdCampaignCosts = async () => {
+  try {
+    const adCampaignManager = await getContractInstance()
+    const costPerClick = await adCampaignManager.costPerClick()
+    const costPerImpression = await adCampaignManager.costPerImpression()
+
+    return {
+      status: 'success',
+      data: {
+        costPerClick: ethers.utils.formatEther(costPerClick),
+        costPerImpression: ethers.utils.formatEther(costPerImpression)
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching ad campaign manager details:', error)
+    return { status: 'error', error: error }
+  }
+}

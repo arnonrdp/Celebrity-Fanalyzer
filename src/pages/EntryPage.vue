@@ -24,10 +24,10 @@
         style="padding-bottom: 7rem"
         :isEntry="true"
         :showEdit="!prompt?.hasWinner && userStore.getUserId === entry.author.uid"
-        :showDelete="!prompt?.hasWinner && userStore.getUserId === entry.author.uid"
+        :showDelete="!prompt?.hasWinner && (userStore.getUserId === entry.author.uid || userStore.isEditorOrAbove)"
         @clickComments="tab = 'comments'"
         @openEntryDialog="openEntryDialog"
-        @onEntryDelete="onEntryDelete"
+        @onEntryDelete="openEntryDeleteDialog"
       />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
@@ -50,7 +50,7 @@
   >
     <EntryCard v-bind="editEntry" @hideDialog="closeEntryDialog" />
   </q-dialog>
-  <q-dialog v-model="deleteEntry.show" data-test="entry-delete-dialog">
+  <q-dialog v-model="deleteEntryDialog.show" data-test="entry-delete-dialog">
     <q-card>
       <q-card-section class="q-pb-none">
         <h6 class="q-my-sm">Delete Entry?</h6>
@@ -58,7 +58,7 @@
       <q-card-section>
         <span class="q-ml-sm">
           Are you sure you want to delete the entry:
-          <b>{{ deleteEntry.entry.title }}</b>
+          <b>{{ deleteEntryDialog.entry.title }}</b>
           ?
         </span>
       </q-card-section>
@@ -69,7 +69,7 @@
           data-test="confirm-delete-entry"
           flat
           label="Delete"
-          @click="onDeleteEntry(deleteEntry.entry.id, deleteEntry.entry.prompt.id, deleteEntry.entry.showcase.arts)"
+          @click="onDeleteEntry(deleteEntryDialog.entry.id, deleteEntryDialog.entry.prompt.id, deleteEntryDialog.entry.showcase.arts)"
         />
       </q-card-actions>
     </q-card>
@@ -94,6 +94,7 @@ import {
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 
 const router = useRouter()
 
@@ -107,8 +108,9 @@ const promptStore = usePromptStore()
 const userStore = useUserStore()
 const tab = ref(entryStore.tab)
 const editEntry = ref({})
-const deleteEntry = ref({})
+const deleteEntryDialog = ref({})
 const prompt = ref({})
+const $q = useQuasar()
 
 let entryId
 let entryAuthor
@@ -158,30 +160,25 @@ async function openEntryDialog() {
   editEntry.value.dialog = true
 }
 
-function onEntryDelete() {
-  deleteEntry.value.show = true
-  deleteEntry.value.entry = entry.value
+function openEntryDeleteDialog() {
+  deleteEntryDialog.value.show = true
+  deleteEntryDialog.value.entry = entry.value
 }
 
 function onDeleteEntry(entryId, promptId, arts) {
   entryStore
     .deleteEntry(entryId, arts)
     .then(() => {
-      if (!userStore.isEditorOrAbove) {
-        entryStore.fetchUserRelatedEntries(userStore.getUserId)
-      } else if (userStore.isEditorOrAbove) {
-        emit('delete-entry', entryId, promptId)
-        setTimeout(() => {
-          router.go(-1)
-        }, 1000)
-      }
+      setTimeout(() => {
+        router.push({ path: '/search' })
+      }, 1000)
     })
     .then(() => $q.notify({ type: 'positive', message: 'Entry deleted' }))
     .catch((error) => {
       $q.notify({ type: 'negative', message: 'Error deleting entry' })
       errorStore.throwError(error, 'Error deleting entry')
     })
-  deleteEntry.value.show = false
+  deleteEntryDialog.value.show = false
 }
 
 function closeEntryDialog(slug) {

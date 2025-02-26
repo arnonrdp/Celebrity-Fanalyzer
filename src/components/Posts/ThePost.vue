@@ -202,7 +202,7 @@ import ShowcaseArt from './ShowcaseArt.vue'
 import { getFormattedLink } from '../../utils/getFormattedLink'
 
 const props = defineProps(['collectionName', 'post', 'title', 'isAdd', 'showEdit', 'showDelete'])
-const emit = defineEmits(['clickComments', 'openPromptDialog', 'openAdvertiseDialog', 'openEntryDialog'])
+const emit = defineEmits(['clickComments', 'openPromptDialog', 'openAdvertiseDialog', 'openEntryDialog', 'onEntryDelete'])
 
 const router = useRouter()
 

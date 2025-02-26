@@ -10,7 +10,7 @@
       </q-toolbar-title>
 
       <q-toolbar-title v-if="backButton || title || subtitle">
-        <q-btn v-if="backButton" color="secondary" flat icon="arrow_back_ios" round size="sm" @click="goBack" />
+        <q-btn v-if="backButton" color="secondary" flat icon="arrow_back_ios" round size="sm" @click="goBack" data-test="back-btn" />
         <b class="text-secondary" data-test="title">{{ title }}</b>
         <q-icon v-if="subtitle" name="arrow_forward" color="secondary" class="q-px-sm" />
         <span v-if="subtitle" class="text-secondary">{{ subtitle }}</span>
@@ -94,7 +94,7 @@
       <PromptCard v-bind="prompt" @hideDialog="prompt = {}" />
     </q-dialog>
 
-    <q-dialog full-width position="bottom" v-model="entry.dialog">
+    <q-dialog full-width position="bottom" v-model="entry.dialog" no-backdrop-dismiss no-refocus no-esc-dismiss>
       <EntryCard v-bind="entry" @hideDialog="entry = {}" />
     </q-dialog>
 
@@ -148,7 +148,7 @@
           <q-btn flat label="Clear" color="primary" @click="clearFilters" />
           <div>
             <q-btn flat label="Cancel" color="primary" v-close-popup />
-            <q-btn flat label="Apply" color="primary" v-close-popup @click="applyFilters" />
+            <q-btn flat label="Apply" data-test="apply-filter-btn" color="primary" v-close-popup @click="applyFilters" />
           </div>
         </q-card-actions>
       </q-card>

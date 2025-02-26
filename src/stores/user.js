@@ -7,7 +7,7 @@ import {
   signOut,
   getAuth
 } from 'firebase/auth'
-import { collection, doc, getDoc, getDocs, onSnapshot, or, query, runTransaction, setDoc, where } from 'firebase/firestore'
+import { collection, doc, deleteDoc, getDoc, getDocs, onSnapshot, or, query, runTransaction, setDoc, where } from 'firebase/firestore'
 import { defineStore } from 'pinia'
 import { LocalStorage, Notify } from 'quasar'
 import sha1 from 'sha1'
@@ -15,7 +15,7 @@ import { auth, db } from 'src/firebase'
 import { baseURL } from 'stores/stats'
 import { mock_layer8_interceptor } from 'mock_layer8_module'
 import { useWalletStore } from 'stores/wallet'
-import { deleteDoc } from 'firebase/firestore'
+import { getFunctions, httpsCallable } from 'firebase/functions'
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -229,14 +229,16 @@ export const useUserStore = defineStore('user', {
     async deleteUser(uid) {
       this._isLoading = true
       try {
-        await deleteDoc(doc(db, 'users', uid))
-
-        this._users = this._users.filter((user) => user.uid !== uid)
+        const functions = getFunctions()
+        const deleteUserFunction = httpsCallable(functions, 'deleteUser')
+        await deleteUserFunction({ uid })
 
         Notify.create({
           color: 'positive',
           message: 'User deleted successfully'
         })
+
+        this._users = this._users.filter((user) => user.uid !== uid)
       } catch (error) {
         console.error('Error deleting user: ', error)
         Notify.create({
@@ -249,7 +251,7 @@ export const useUserStore = defineStore('user', {
     },
 
     // async addAllUsers(users) {
-    //   await fetch(`${baseURL}/add-all-users`, {
+    //   await fetch(${baseURL}/add-all-users, {
     //     method: 'POST',
     //     headers: {
     //       'Content-Type': 'application/json'
@@ -259,7 +261,7 @@ export const useUserStore = defineStore('user', {
     // },
 
     // async getStatsUsers() {
-    //   const allUsers = await mock_layer8_interceptor.fetch(`${baseURL}/users`, {
+    //   const allUsers = await mock_layer8_interceptor.fetch(${baseURL}/users, {
     //     method: 'GET'
     //   })
     //   this._statsUsers = await allUsers.json()

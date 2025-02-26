@@ -23,7 +23,7 @@ export const handleLikesAndDislikes = (data, mapRef) => {
       const circleOptions = {
         autoClose: false,
         closeOnClick: false,
-        radius: normalizedRadius,
+        radius: normalizedRadius || minRadius,
         fillOpacity: 0.5,
         color: '#e54757',
         fillColor: '#e54757',
@@ -62,7 +62,7 @@ export const handleComments = (data, mapRef) => {
         const circleOptions = {
           autoClose: false,
           closeOnClick: false,
-          radius: normalizedRadius,
+          radius: normalizedRadius || minRadius,
           fillOpacity: 0.5,
           color: '#e54757',
           fillColor: '#e54757',
@@ -98,7 +98,7 @@ export const handleShares = (data, mapRef) => {
         const circleOptions = {
           autoClose: false,
           closeOnClick: false,
-          radius: normalizedRadius,
+          radius: normalizedRadius || minRadius,
           fillOpacity: 0.5,
           color: '#e54757',
           fillColor: '#e54757',

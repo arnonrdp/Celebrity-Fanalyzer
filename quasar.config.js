@@ -10,7 +10,7 @@
 
 const { configure } = require('quasar/wrappers')
 const path = require('path')
-
+const vitePluginIstanbul = require('vite-plugin-istanbul')
 require('dotenv').config({ path: path.resolve(__dirname, '.env') })
 module.exports = configure(function (ctx) {
   return {
@@ -20,7 +20,7 @@ module.exports = configure(function (ctx) {
     },
 
     // App boot file (/src/boot)
-    boot: ['tanstack-query', 'sentry'],
+    boot: ['tanstack-query', 'sentry', 'clarity'],
 
     // CSS to include
     css: ['app.css'],
@@ -31,7 +31,7 @@ module.exports = configure(function (ctx) {
     // Build configuration
     build: {
       // Disable source maps for production
-      sourceMap: false,
+      sourceMap: true,
       target: {
         // Use modern ECMAScript for browser support
         browser: 'es2020',
@@ -42,6 +42,8 @@ module.exports = configure(function (ctx) {
       vueRouterMode: 'history',
 
       extendViteConf(viteConf) {
+        viteConf.plugins = viteConf.plugins || []
+        viteConf.plugins.push(vitePluginIstanbul())
         viteConf.build.rollupOptions = {
           output: {
             manualChunks(id) {

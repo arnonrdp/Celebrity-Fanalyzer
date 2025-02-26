@@ -4,7 +4,7 @@ const ONE_DAY_IN_SECONDS = 86400
 const ONE_WEEK_IN_SECONDS = 604800
 
 export function formatMonthYear(date) {
-  const [year, month] = date.split('-')
+  const [year, month] = date?.split('-')
   // Change 'short' to 'long'
   const monthName = new Date(year, month - 1).toLocaleDateString('en-US', { month: 'long' })
   // August 2030

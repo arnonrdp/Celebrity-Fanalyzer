@@ -1,7 +1,7 @@
 <template>
   <q-form class="q-gutter-y-md" greedy @submit="save">
     <div class="flex items-center no-wrap">
-      <q-avatar size="5rem" text-color="white" class="q-mt-lg">
+      <q-avatar size="5rem" text-color="white" class="q-mt-lg" data-test="avatar-upload">
         <template v-if="storageStore.isLoading">
           <q-spinner color="primary" size="3rem" />
         </template>
@@ -26,15 +26,39 @@
         label="Name"
         required
         :rules="[(val) => val.length || 'Name is required']"
+        data-test="input-name"
         v-model="user.displayName"
       />
     </div>
-    <q-input class="non-selectable" debounce="400" label="Username" :rules="[(val) => usernameValidator(val)]" v-model.trim="user.username">
+    <q-input
+      class="non-selectable"
+      debounce="400"
+      label="Username"
+      data-test="input-user-name"
+      :rules="[(val) => usernameValidator(val)]"
+      v-model.trim="user.username"
+    >
       <template v-slot:append>
-        <q-btn v-if="userStore.getUser?.username && isUsernameSame" flat icon="content_copy" round size="sm" @click="copyLink">
+        <q-btn
+          v-if="userStore.getUser?.username && isUsernameSame"
+          flat
+          icon="content_copy"
+          data-test="button-username-copy"
+          round
+          size="sm"
+          @click="copyLink"
+        >
           <q-tooltip>Copy</q-tooltip>
         </q-btn>
-        <q-btn v-if="userStore.getUser?.username && isUsernameSame" flat icon="open_in_new" round size="sm" @click="openUserProfile">
+        <q-btn
+          v-if="userStore.getUser?.username && isUsernameSame"
+          flat
+          icon="open_in_new"
+          round
+          size="sm"
+          @click="openUserProfile"
+          data-test="button-username-view-profile"
+        >
           <q-tooltip>View Profile</q-tooltip>
         </q-btn>
       </template>
@@ -57,19 +81,23 @@
         </q-btn>
       </q-input>
     </div>
-    <q-input counter label="Bio" maxlength="1000" type="textarea" v-model="user.bio" />
+    <q-input counter label="Bio" maxlength="1000" type="textarea" data-test="input-bio" v-model="user.bio" />
 
     <h3 class="q-mt-xl text-bold text-h5 text-secondary">Social Networks</h3>
-    <q-input label="Facebook" placeholder="https://www.facebook.com/" v-model.trim="user.facebook" />
-    <q-input label="Instagram" placeholder="https://www.instagram.com/" v-model.trim="user.instagram" />
-    <q-input label="Linkedin" placeholder="https://www.linkedin.com/" v-model.trim="user.linkedin" />
-    <q-input label="Telegram" placeholder="https://www.telegram.com/" v-model.trim="user.telegram" />
-    <q-input label="X" placeholder="https://www.x.com/" v-model.trim="user.x" />
+    <q-input
+      v-for="network in socialNetworks"
+      :key="network.name"
+      :label="capitalize(network.name)"
+      :placeholder="network.link"
+      :data-test="'input-' + network.name"
+      :model-value="user[network.name]"
+      @update:model-value="(val) => (user[network.name] = val.replace(/\s+/g, ''))"
+    />
 
-    <q-btn class="full-width q-my-lg" color="primary" label="Save" padding="12px" rounded type="submit" />
+    <q-btn class="full-width q-my-lg" color="primary" label="Save" padding="12px" data-test="button-submit" rounded type="submit" />
   </q-form>
 
-  <q-dialog v-model="uploadDialog.show" persistent>
+  <q-dialog v-model="uploadDialog.show" persistent data-test="upload-dialog">
     <q-card style="max-width: 300px; width: 100%">
       <q-card-section class="q-pb-none">
         <h6 class="q-my-sm">Upload Profile Picture</h6>
@@ -82,6 +110,7 @@
           class="q-mb-md"
           spinner-color="primary"
           spinner-size="5rem"
+          data-test="upload-preview"
           style="height: 200px; width: 200px; object-fit: cover; border-radius: 50%; border: 2px solid #ddd"
         />
         <div v-else class="q-mb-md">
@@ -106,6 +135,7 @@
           dense
           filled
           bottom-slots
+          data-test="upload-file-input"
         ></q-file>
       </q-card-section>
 
@@ -119,8 +149,9 @@
             :disable="!Boolean(newPhoto || previewImage)"
             @click="deleteImage"
             style="flex: 1; margin-right: 10px"
+            data-test="upload-delete-btn"
           />
-          <q-btn color="primary" label="Save" v-close-popup @click="uploadPhotoToDB" style="flex: 1" />
+          <q-btn color="primary" label="Save" v-close-popup @click="uploadPhotoToDB" style="flex: 1" data-test="upload-save-btn" />
         </div>
       </q-card-actions>
     </q-card>
@@ -165,6 +196,18 @@ const removeWalletAddressDialog = ref({ show: false })
 const isUpdate = ref(false)
 const uploadDialog = ref({ show: false })
 const previewImage = ref(null)
+
+const socialNetworks = [
+  { name: 'facebook', link: 'https://www.facebook.com/' },
+  { name: 'instagram', link: 'https://www.instagram.com/' },
+  { name: 'linkedin', link: 'https://www.linkedin.com/in/' },
+  { name: 'telegram', link: 'https://t.me/' },
+  { name: 'x', link: 'https://x.com/' }
+]
+
+function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1)
+}
 
 watch([currentWalletAddress, user], () => {
   isUpdate.value = !!user.value.walletAddress

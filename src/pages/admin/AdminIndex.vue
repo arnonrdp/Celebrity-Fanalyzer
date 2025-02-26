@@ -56,16 +56,16 @@
         />
       </q-tabs>
 
-      <q-dialog full-width position="bottom" v-model="prompt.dialog">
-        <PromptCard v-bind="prompt" @hideDialog="prompt = {}" />
+      <q-dialog full-width position="bottom" v-model="prompt.dialog" data-test="prompt-dialog">
+        <PromptCard v-bind="prompt" @hideDialog="prompt = {}" data-test="prompt-card" />
       </q-dialog>
 
-      <q-dialog full-width position="bottom" v-model="entry.dialog">
-        <EntryCard v-bind="entry" @hideDialog="entry = {}" />
+      <q-dialog full-width position="bottom" v-model="entry.dialog" no-backdrop-dismiss no-refocus no-esc-dismiss data-test="entry-dialog">
+        <EntryCard v-bind="entry" @hideDialog="entry = {}" data-test="entry-card" />
       </q-dialog>
 
-      <q-dialog class="min-" position="bottom" v-model="advertise.dialog">
-        <AdvertiseCard v-bind="advertise" @hideDialog="advertise = {}" />
+      <q-dialog full-width position="bottom" v-model="advertise.dialog" data-test="advertise-dialog">
+        <AdvertiseCard v-bind="advertise" @hideDialog="advertise = {}" data-test="advertise-card" />
       </q-dialog>
 
       <router-view @openPromptDialog="openPromptDialog" @openAdvertiseDialog="openAdvertiseDialog" />

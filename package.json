@@ -14,8 +14,8 @@
     "test": "vitest",
     "vitest": "vitest -u",
     "vitest:coverage": "vitest run --coverage",
-    "coverage": "cd coverage/src/stores && open index.html",
-    "cy:run": "cypress run",
+    "cy:coverage": "cd coverage/lcov-report && open index.html",
+    "cy:run": "cypress run && nyc report --reporter=lcov",
     "cy:open": "cypress open",
     "cy:test": "start-server-and-test dev http-get://localhost:9200 cy:run",
     "prepare": "husky",
@@ -37,7 +37,27 @@
     "cy:test": "start-server-and-test dev http-get://localhost:9200 cy:run",
     "sentry:sourcemaps": "sentry-cli sourcemaps inject --org testing-se --project javascript-vue dist && sentry-cli sourcemaps upload --org testing-se --project javascript-vue dist"
   },
+  "nyc": {
+    "extension": [
+      ".vue"
+    ],
+    "exclude": [
+      "*.js",
+      "**/*.js",
+      "**/*.d.ts",
+      "**/*.js",
+      "**/*.cy.js",
+      "src/components/Admin/CryptoTransactionDetailCard.vue",
+      "src/components/Admin/FundDepositCard.vue",
+      "src/components/Admin/WalletPaymentCard.vue",
+      "src/components/Advertiser/AdvertiseCard.vue",
+      "src/components/Advertiser/CampaignCard.vue",
+      "src/components/Profile/Web3ModalComponent.vue",
+      "src/components/Posts/Graphs/CTRBar.vue"
+    ]
+  },
   "dependencies": {
+    "@microsoft/clarity": "^1.0.0",
     "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@quasar/extras": "^1.16.12",
     "@sentry/cli": "^2.33.0",
@@ -79,6 +99,7 @@
     "autoprefixer": "^10.4.16",
     "c8": "^7.14.0",
     "cypress": "^13.11.0",
+    "cypress-file-upload": "^5.0.8",
     "cypress-wait-until": "^1.7.2",
     "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",

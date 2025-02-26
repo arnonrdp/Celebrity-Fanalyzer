@@ -1,11 +1,20 @@
 <template>
-  <q-tabs active-color="primary" class="bg-white fixed-bottom tab-selector q-pb-xs" dense indicator-color="transparent" v-model="tab">
-    <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="post" :ripple="false" />
-    <q-tab content-class="q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" />
-    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false" />
+  <q-tabs
+    active-color="primary"
+    class="bg-white fixed-bottom tab-selector q-pb-xs"
+    dense
+    indicator-color="transparent"
+    v-model="tab"
+    data-test="tabs-selector"
+  >
+    <q-tab content-class="q-ml-auto q-pb-md" icon="fiber_manual_record" name="post" :ripple="false" data-test="tab-post" />
+    <q-tab content-class="q-pb-md" icon="fiber_manual_record" name="stats" :ripple="false" data-test="tab-stats" />
+    <q-tab content-class="q-mr-auto q-pb-md" icon="fiber_manual_record" name="comments" :ripple="false" data-test="tab-comments" />
   </q-tabs>
+
   <q-spinner v-if="entryStore.isLoading" class="absolute-center" color="primary" size="3em" />
-  <q-tab-panels v-else-if="entry" animated class="bg-transparent col-grow" swipeable v-model="tab">
+
+  <q-tab-panels v-else-if="entry" animated class="bg-transparent col-grow" swipeable v-model="tab" data-test="tab-panels">
     <!-- Panel 1: Entry -->
     <q-tab-panel name="post" style="padding: 0" data-test="entry-page">
       <ThePost
@@ -20,15 +29,23 @@
       />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
-    <q-tab-panel name="stats" class="bg-white">
+    <q-tab-panel name="stats" class="bg-white" data-test="tab-panel-stats">
       <TheAnthrogram :post="entry" collectionName="entries" />
     </q-tab-panel>
     <!-- Panel 3: Comments -->
-    <q-tab-panel name="comments" class="bg-white">
+    <q-tab-panel name="comments" class="bg-white" data-test="tab-panel-comments">
       <TheComments v-if="entry" collectionName="entries" :post="entry" />
     </q-tab-panel>
   </q-tab-panels>
-  <q-dialog full-width position="bottom" v-model="editEntry.dialog">
+  <q-dialog
+    full-width
+    position="bottom"
+    v-model="editEntry.dialog"
+    no-backdrop-dismiss
+    no-refocus
+    no-esc-dismiss
+    data-test="edit-entry-dialog"
+  >
     <EntryCard v-bind="editEntry" @hideDialog="closeEntryDialog" />
   </q-dialog>
 </template>

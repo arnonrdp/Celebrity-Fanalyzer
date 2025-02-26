@@ -14,7 +14,8 @@ describe('Home page', () => {
       cy.get('h3').eq(0).contains('“Celebrity Fanalyzer?”')
       cy.getByData('roadmap').find('h3').contains('Development Roadmap')
 
-      cy.getByData('roadmap').get('.q-expansion-item').eq(0).click()
+      cy.getByData('roadmap')
+      cy.get('.q-expansion-item').eq(0).click()
     })
   })
   it('Should display properly', () => {

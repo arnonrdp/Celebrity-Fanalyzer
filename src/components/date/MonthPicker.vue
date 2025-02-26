@@ -79,14 +79,23 @@ watch(modelValue, setCurrentDate, { immediate: true })
 </script>
 
 <template>
-  <div class="q-date q-date--portrait q-date--portrait-minimal">
+  <div class="q-date q-date--portrait q-date--portrait-minimal" data-test="month-picker">
     <div class="q-date__main col column">
       <div class="q-date__content col relative-position">
         <div class="q-date__view q-date__months flex flex-center">
           <div class="row no-wrap full-width justify-between items-center">
-            <q-btn icon="chevron_left" round flat size="sm" dense @click="onClickLeft" :disable="!canTraverseLeft" />
+            <q-btn
+              icon="chevron_left"
+              round
+              flat
+              size="sm"
+              dense
+              @click="onClickLeft"
+              :disable="!canTraverseLeft"
+              data-test="navigate-left"
+            />
             <q-btn flat dense>{{ currentYear }}</q-btn>
-            <q-btn icon="chevron_right" round flat size="sm" dense @click="onClickRight" />
+            <q-btn icon="chevron_right" round flat size="sm" dense @click="onClickRight" data-test="navigate-right" />
           </div>
 
           <div class="q-date__months-item flex flex-center" v-for="(month, idx) in months" :key="month">
@@ -95,7 +104,8 @@ watch(modelValue, setCurrentDate, { immediate: true })
               :color="isActive(idx) ? 'primary' : isDisabled(idx) ? 'grey' : 'default'"
               :disable="isDisabled(idx)"
               @click="!isDisabled(idx) && onSelectMonth(idx)"
-              :class="{ 'disabled-month': isDisabled(idx) }"
+              :class="{ 'q-btn--active': isActive(idx), 'disabled-month': isDisabled(idx) }"
+              data-test="month-btn"
             >
               {{ month }}
             </q-btn>

@@ -215,7 +215,6 @@ const monthPrompt = computed(() => {
 onMounted(async () => {
   await promptStore.fetchMonthsPrompt().catch((error) => errorStore.throwError(error, error))
 })
-console.log('redeploy')
 </script>
 
 <style scoped lang="scss">

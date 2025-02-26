@@ -4,9 +4,9 @@
     <q-page>
       <section class="q-py-md">
         <q-tabs active-color="primary" align="justify" class="text-grey q-mb-xl" dense indicator-color="primary" v-model="interval">
-          <q-tab name="daily" label="Daily" />
-          <q-tab name="weekly" label="Weekly" />
-          <q-tab name="monthly" label="Monthly" />
+          <q-tab name="daily" label="Daily" data-test="q-tab-daily" />
+          <q-tab name="weekly" label="Weekly" data-test="q-tab-weekly" />
+          <q-tab name="monthly" label="Monthly" data-test="q-tab-monthly" />
         </q-tabs>
         <q-separator spaced="xl" />
 
@@ -15,6 +15,7 @@
             v-if="!!visitorStore?.getVisitors?.length"
             v-bind:class="statStore.getStats && hasValidStats ? 'col-md-6' : 'col-md-12'"
             class="col-12 anthogram-border"
+            data-test="visitors-bar"
           >
             <VisitorsBar :data="visitorStore?.getVisitors" :interval="interval" />
           </div>
@@ -22,11 +23,12 @@
             v-if="hasValidStats && statStore.getStats"
             v-bind:class="!!visitorStore?.getVisitors?.length ? 'col-md-6' : 'col-md-12'"
             class="col-12 anthogram-border"
+            data-test="half-donought"
           >
             <HalfDonought :stats="statStore.getStats" :title="'User\'s total activity'" />
           </div>
         </div>
-        <div v-if="isAdd" class="anthogram-border q-my-sm">
+        <div v-if="isAdd" class="anthogram-border q-my-sm" data-test="ctr-bar">
           <CTRBar :interval="interval" :impressionsData="impressionsStore.getImpressions" :clicksData="clickStore.getClicks" />
         </div>
 
@@ -35,6 +37,7 @@
             class="col-12 anthogram-border"
             v-if="!!shareStore?.getSharesStats?.length"
             v-bind:class="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length ? 'col-md-6' : 'col-md-12'"
+            data-test="shares-pie"
           >
             <q-skeleton v-if="shareStore?.isLoading" width="100%" height="40vh" />
             <SharesPie v-else :data="shareStore?.getSharesStats" :interval="interval" />
@@ -43,6 +46,7 @@
             class="col-12 anthogram-border"
             v-if="!!likeStore.getLikes?.length || !!likeStore.getDislikes?.length"
             v-bind:class="!!shareStore?.getSharesStats?.length ? 'col-md-6' : 'col-md-12'"
+            data-test="likes-bar"
           >
             <LikesBar :data="{ likes: likeStore.getLikes ?? [], dislikes: likeStore.getDislikes ?? [] }" :interval="interval" />
           </div>
@@ -53,6 +57,7 @@
             class="col-12 anthogram-border rating-chart"
             v-if="!!statStore.getArticleRate"
             v-bind:class="!!statStore.getUserRate ? 'col-md-6' : 'col-md-12'"
+            data-test="article-popularity"
           >
             <PopularityGauge :ratingValue="statStore.getArticleRate" :title="'Post popularity rating'" />
           </div>
@@ -60,6 +65,7 @@
             class="col-12 anthogram-border rating-chart"
             v-if="!!statStore.getUserRate"
             v-bind:class="!!statStore.getArticleRate ? 'col-md-6' : 'col-md-12'"
+            data-test="user-popularity"
           >
             <PopularityGauge :ratingValue="statStore.getUserRate" :title="'User rating'" />
           </div>
@@ -67,7 +73,7 @@
 
         <q-separator spaced="xl" />
         <div class="row q-mb-lg" v-if="!!statStore.getAllInteractionsByCountry?.response?.length">
-          <div class="col-12 relative-position">
+          <div class="col-12 relative-position" data-test="leaflet-map">
             <LeafletMap />
           </div>
         </div>

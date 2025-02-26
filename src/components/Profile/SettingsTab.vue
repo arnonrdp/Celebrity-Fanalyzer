@@ -1,5 +1,5 @@
 <template>
-  <q-input v-model="userStore.getUser.email" disable label="Email" />
+  <q-input v-model="userStore.getUser.email" disable label="Email" data-test="profile-email" />
   <q-btn class="full-width q-mt-lg" color="secondary" data-test="logout-button" label="Logout" padding="12px" rounded @click="onLogout" />
 
   <q-btn
@@ -12,21 +12,23 @@
     @click="openDeleteConfirmationDialog"
   />
 
-  <q-dialog v-model="deleteDialog.show">
+  <q-dialog v-model="deleteDialog.show" data-test="delete-account-dialog">
     <q-card>
       <q-card-section class="q-pb-none">
         <h6 class="q-my-sm">Delete Account?</h6>
       </q-card-section>
-      <q-card-section>
+      <q-card-section data-test="delete-confirmation-message">
         Hi
-        <strong>{{ userStore.getUser.displayName }}</strong>
+        <strong data-test="user-display-name">{{ userStore.getUser.displayName }}</strong>
         , are you sure you want to delete your account? This action is irreversible.
       </q-card-section>
+
       <q-card-section>
         <q-input
           v-model="confirmationText"
           label="Type DELETE to confirm"
           filled
+          data-test="delete-confirmation-input"
           :rules="[(val) => val === 'DELETE' || 'You must type DELETE to confirm']"
         />
       </q-card-section>

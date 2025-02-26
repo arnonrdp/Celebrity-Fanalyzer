@@ -173,7 +173,14 @@
                   </q-file>
                 </div>
                 <div class="col-1 flex justify-center items-center"><p>or</p></div>
-                <q-btn color="primary" icon="add_a_photo" class="self-center" label="Capture Image" @click="openCamera = true"></q-btn>
+                <q-btn
+                  color="primary"
+                  icon="add_a_photo"
+                  class="self-center"
+                  label="Capture Image"
+                  data-test="button-camera-capture"
+                  @click="openCamera = true"
+                ></q-btn>
               </div>
               <q-select
                 behavior="menu"
@@ -250,7 +257,7 @@
               <q-skeleton type="rect" class="q-mr-md" style="height: 40px; width: 120px" />
             </template>
             <template v-else>
-              <q-btn v-if="step < 2" flat rounded label="Cancel" v-close-popup :disable="promptStore.isLoading" />
+              <q-btn v-if="step < 2" flat rounded label="Cancel" v-close-popup :disable="promptStore.isLoading" data-test="button-cancel" />
               <q-btn v-if="step > 1" flat rounded @click="$refs.stepper.previous()" label="Back" :disable="promptStore.isLoading" />
 
               <q-btn

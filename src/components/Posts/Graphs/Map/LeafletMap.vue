@@ -1,5 +1,13 @@
 <template>
-  <q-select v-model="selectedDataType" :options="dataOptions" label="Filter By" outlined dense class="q-mb-lg q-select-class" />
+  <q-select
+    v-model="selectedDataType"
+    :options="dataOptions"
+    label="Filter By"
+    outlined
+    dense
+    class="q-mb-lg q-select-class"
+    data-test="filter-select"
+  />
   <div class="total-countries">
     <div>
       Total Countries Participated:

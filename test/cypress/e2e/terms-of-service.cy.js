@@ -10,7 +10,7 @@ describe('Accessing the Terms of Service', () => {
     cy.visit('/')
 
     // Clicks on the Terms of Service button
-    cy.get('[data-test="terms-of-service-button"').click()
+    cy.get('[data-test="terms-of-service-button"]').click()
 
     // Checks if the URL is correct
     cy.location('pathname').should('eq', '/terms-of-service')

@@ -120,12 +120,8 @@
       </q-tr>
     </template>
   </q-table>
-  <TableEntry
-    v-else
-    :filter="filter"
-    :rows="entryStore.getUserRelatedEntries?.sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
-  />
-  <div class="row justify-center q-mr-md float-right">
+  <TableEntry v-else :filter="filter" :rows="[]" user-related-table @update-entry="handleUpdateEntry" @delete-entry="handleDeleteEntry" />
+  <div v-if="userStore.isEditorOrAbove" class="row justify-center q-mr-md float-right">
     <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="30px" :thickness="5" />
     <q-btn
       v-else

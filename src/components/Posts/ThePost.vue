@@ -162,6 +162,18 @@
           <q-btn v-if="showEdit" color="blue" flat icon="edit" rounded size="0.75rem" @click="manageEdit" data-test="edit">
             <q-tooltip>Edit {{ isPrompt ? 'Prompt' : isAdd ? 'Advertise' : 'Entry' }}</q-tooltip>
           </q-btn>
+          <q-btn
+            v-if="showDelete && isEntry"
+            color="negative"
+            flat
+            icon="delete"
+            rounded
+            size="0.75rem"
+            @click="manageDelete"
+            data-test="delete"
+          >
+            <q-tooltip>Delete Entry</q-tooltip>
+          </q-btn>
         </div>
       </section>
     </q-page>
@@ -189,8 +201,8 @@ import ShareComponent from './ShareComponent.vue'
 import ShowcaseArt from './ShowcaseArt.vue'
 import { getFormattedLink } from '../../utils/getFormattedLink'
 
-const props = defineProps(['collectionName', 'post', 'title', 'isAdd', 'showEdit'])
-const emit = defineEmits(['clickComments', 'openPromptDialog', 'openAdvertiseDialog', 'openEntryDialog'])
+const props = defineProps(['collectionName', 'post', 'title', 'isAdd', 'showEdit', 'showDelete'])
+const emit = defineEmits(['clickComments', 'openPromptDialog', 'openAdvertiseDialog', 'openEntryDialog', 'onEntryDelete'])
 
 const router = useRouter()
 
@@ -311,6 +323,10 @@ function manageEdit() {
   } else if (isEntry) {
     emit('openEntryDialog')
   }
+}
+
+function manageDelete() {
+  emit('onEntryDelete')
 }
 
 // watchEffect(async () => {

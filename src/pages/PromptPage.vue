@@ -74,8 +74,8 @@ const prompt = computed(() => {
     ?.sort((a, b) => a.id - b.id)
     ?.find((prompt) => {
       switch (route.name) {
-        case 'year-month':
-          return prompt.date === params.value.year + '-' + params.value.month
+        // case 'year-month':
+        //   return prompt.date === params.value.year + '-' + params.value.month
         case 'slug':
           return prompt.slug?.includes(params.value.slug)
         default:

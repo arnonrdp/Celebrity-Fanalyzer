@@ -86,17 +86,24 @@ const prompt = ref({})
 let entryId
 let entryAuthor
 const entry = computed(() => {
-  return entryStore.getEntries?.find(
-    (entry) =>
-      router.currentRoute.value.href === entry.slug ||
-      router.currentRoute.value.href.slice(1, -3).replace('/', '-').replace('/', '') === entry.id
+  return (
+    entryStore.getEntries?.find(
+      (entry) =>
+        router.currentRoute.value.href === entry.slug ||
+        router.currentRoute.value.href.slice(1, -3).replace('/', '-').replace('/', '') === entry.id
+    ) ||
+    entryStore.getUserRelatedEntries.find(
+      (entry) =>
+        router.currentRoute.value.href === entry.slug ||
+        router.currentRoute.value.href.slice(1, -3).replace('/', '-').replace('/', '') === entry.id
+    )
   )
 })
 watchEffect(async () => {
-  if (entry.value?.author?.uid) {
-    await statStore.getUserRating(entry.value?.author?.uid)
-  }
-  if (entry.value?.prompt?.id) {
+  // if (entry.value?.author?.uid) {
+  //   await statStore.getUserRating(entry.value?.author?.uid)
+  // }
+  if (entry.value?.prompt?.id && (!prompt.value.id || prompt.value.id !== entry.value?.prompt?.id)) {
     prompt.value = (await promptStore.fetchPromptById(entry.value.prompt.id))[0]
   }
   if (entry.value?.id) {

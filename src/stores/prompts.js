@@ -40,7 +40,6 @@ const getPrompts = async (querySnapshot, userStore) => {
     const promptData = doc.data()
     const authorId = promptData.author.id
     const author = userStore.getUserById(authorId) || (await userStore.fetchUser(authorId))
-
     prompts.push({
       id: doc.id,
       ...promptData,
@@ -63,7 +62,8 @@ export const usePromptStore = defineStore('prompts', {
     loadCount: 6,
     _totalPrompts: undefined,
     _lastVisible: null,
-    _hasMore: true
+    _hasMore: true,
+    filterOngoingCompetitions: false
   }),
 
   getters: {
@@ -92,22 +92,28 @@ export const usePromptStore = defineStore('prompts', {
       }, 6000)
     },
 
-    async fetchPrompts(loadMore = false, count) {
+    async fetchPrompts(loadMore = false, count, managePrompts = false) {
       const userStore = useUserStore()
       this._isLoading = true
 
       try {
         let queryRef = collection(db, 'prompts')
         const limitCount = count ?? this.loadCount
+        const conditions = [limit(limitCount)]
 
+        if (!userStore.isEditorOrAbove && managePrompts) {
+          const userRef = doc(db, 'users', userStore.getUser.uid)
+          conditions.push(where('author', '==', userRef))
+        }
         if (loadMore) {
           queryRef = this._lastVisible
-            ? query(queryRef, orderBy('id', 'desc'), startAfter(this._lastVisible), limit(limitCount))
-            : query(queryRef, orderBy('id', 'desc'), limit(limitCount))
+            ? query(queryRef, orderBy('id', 'desc'), startAfter(this._lastVisible), ...conditions)
+            : query(queryRef, orderBy('id', 'desc'), ...conditions)
         } else {
-          queryRef = query(queryRef, orderBy('id', 'desc'), limit(limitCount))
+          queryRef = query(queryRef, orderBy('id', 'desc'), ...conditions)
         }
         const querySnapshot = await getDocs(queryRef)
+
         const newPrompts = await getPrompts(querySnapshot, userStore)
 
         if (newPrompts.length > 0) {
@@ -116,7 +122,7 @@ export const usePromptStore = defineStore('prompts', {
         if (newPrompts.length > 4) this._hasMore = true
         else this._hasMore = false
 
-        this._prompts = loadMore ? [...(this._prompts?.length > 5 ? this._prompts : []), ...newPrompts] : newPrompts
+        this._prompts = loadMore ? [...(this._prompts?.length >= 5 ? this._prompts : []), ...newPrompts] : newPrompts
 
         return newPrompts
       } catch (error) {
@@ -139,10 +145,18 @@ export const usePromptStore = defineStore('prompts', {
     async fetchActivePrompts() {
       const userStore = useUserStore()
       this._isLoading = true
+      const today = new Date()
+      const formattedDate = `${today.getUTCFullYear()}-${String(today.getUTCMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
 
       try {
         let queryRef = collection(db, 'prompts')
-        queryRef = query(queryRef, where('hasWinner', '==', null), where('escrowId', '!=', null))
+        queryRef = query(
+          queryRef,
+          where('hasWinner', '==', null),
+          where('escrowId', '!=', null),
+          where('publicationDate', '<=', formattedDate),
+          where('endDate', '>=', formattedDate)
+        )
 
         const querySnapshot = await getDocs(queryRef)
         const activePrompts = await getPrompts(querySnapshot, userStore)
@@ -284,7 +298,7 @@ export const usePromptStore = defineStore('prompts', {
       const prompt = isTester ? { ...payload, escrowId: '0.0000000000000000001' } : { ...payload }
       prompt.author = doc(db, 'users', prompt.author.value)
       prompt.created = Timestamp.fromDate(new Date())
-      prompt.id = prompt.date
+      prompt.id = payload.id
       prompt.hasWinner = null
 
       this._isLoading = true
@@ -379,7 +393,7 @@ export const usePromptStore = defineStore('prompts', {
         const deleteVisitors = visitorStore.deleteAllVisitors('prompts', id)
         const deletePromptFromStats = statStore.removeTopic(id)
 
-        await Promise.all([deleteComments, deleteLikes, deleteShares, deleteImage, deletePromptDoc, deleteVisitors, deletePromptFromStats])
+        await Promise.all([deleteComments, deleteImage, deleteLikes, deleteShares, deletePromptDoc, deleteVisitors, deletePromptFromStats])
         this._prompts = this.getPrompts?.filter((prompt) => prompt.id !== id)
       } catch (error) {
         await errorStore.throwError(error, 'Error deleting prompt')

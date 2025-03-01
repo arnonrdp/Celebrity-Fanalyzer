@@ -23,8 +23,8 @@
         title="Entry Page"
         style="padding-bottom: 7rem"
         :isEntry="true"
-        :showEdit="!prompt?.hasWinner && userStore.getUserId === entry.author.uid"
-        :showDelete="!prompt?.hasWinner && (userStore.getUserId === entry.author.uid || userStore.isEditorOrAbove)"
+        :showEdit="checkEditDeletePermissions"
+        :showDelete="checkEditDeletePermissions"
         @clickComments="tab = 'comments'"
         @openEntryDialog="openEntryDialog"
         @onEntryDelete="openEntryDeleteDialog"
@@ -140,6 +140,10 @@ watchEffect(async () => {
 onMounted(async () => {
   startTracking()
 })
+
+function checkEditDeletePermissions() {
+  return !prompt.value?.hasWinner && (userStore.getUserId === entry.value.author.uid || userStore.isEditorOrAbove)
+}
 
 onUnmounted(async () => {
   const stats = stopTracking()

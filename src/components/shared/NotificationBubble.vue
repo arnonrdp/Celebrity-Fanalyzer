@@ -30,8 +30,10 @@
             data-test="notification-read-icon"
           />
         </q-item-section>
+
+        <q-tooltip>{{ notification.message }}</q-tooltip>
         <q-item-section class="cursor-pointer" @click="goToLink(notification)" data-test="notification-message">
-          {{ notification.message }}
+          {{ notification.message.length > 50 ? notification.message.substring(0, 50) + '...' : notification.message }}
         </q-item-section>
         <q-item-section side>
           <q-btn flat icon="clear" round size="sm" @click="deleteOne(notification.id)" data-test="notification-clear-btn" />
@@ -89,6 +91,9 @@ function goToLink(notification) {
     const entry = notification.slug || notification.link.slice(0, 8) + '/' + notification.link.slice(8) + '_id'
     router.push(entry)
     entryStore.setTab('comments')
+  }
+  if (notification.type === 'winner') {
+    router.push('/admin')
   }
 }
 

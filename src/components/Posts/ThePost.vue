@@ -49,10 +49,10 @@
             </q-badge>
           </div>
         </div>
-        <div class="flex justify-between">
-          <h1 class="q-mt-none text-bold text-h5" data-test="post-title">{{ post?.title }}</h1>
+        <div class="flex justify-between items-center">
+          <h1 class="text-bold text-h5" data-test="post-title">{{ post?.title }}</h1>
 
-          <div v-if="isPrompt && post.rewardAmount" class="reward-container">
+          <div v-if="isPrompt && post.rewardAmount" class="reward-container flex items-center">
             <span class="trophy-icon">🏆</span>
             <span class="reward-amount">{{ post?.rewardAmount ?? 0 }}$</span>
           </div>
@@ -351,6 +351,7 @@ function manageEdit() {
   font-weight: bold;
   color: #f9a826;
   transition: all 0.3s ease;
+  justify-content: flex-end;
 }
 
 .trophy-icon {
@@ -362,6 +363,7 @@ function manageEdit() {
 .reward-amount {
   color: #f9a826;
   font-size: 1rem;
+  margin-left: 5px;
 }
 
 .reward-container span {

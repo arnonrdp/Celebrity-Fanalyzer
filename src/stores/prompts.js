@@ -6,6 +6,7 @@ import {
   getDoc,
   getDocs,
   limit,
+  onSnapshot,
   or,
   orderBy,
   query,
@@ -63,7 +64,8 @@ export const usePromptStore = defineStore('prompts', {
     loadCount: 6,
     _totalPrompts: undefined,
     _lastVisible: null,
-    _hasMore: true
+    _hasMore: true,
+    unsubscribe: null
   }),
 
   getters: {
@@ -136,23 +138,13 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
-    async fetchActivePrompts() {
-      const userStore = useUserStore()
-      this._isLoading = true
-
-      try {
-        let queryRef = collection(db, 'prompts')
-        queryRef = query(queryRef, where('hasWinner', '==', null), where('escrowId', '!=', null))
-
-        const querySnapshot = await getDocs(queryRef)
-        const activePrompts = await getPrompts(querySnapshot, userStore)
-        this._activePrompts = activePrompts
-        return activePrompts
-      } catch (error) {
-        console.error('Error fetching prompts:', error)
-      } finally {
-        this._isLoading = false
-      }
+    async activePromptsListener() {
+      let queryRef = collection(db, 'prompts')
+      queryRef = query(queryRef, where('hasWinner', '==', null), where('escrowId', '!=', null))
+      onSnapshot(queryRef, (querySnapshot) => {
+        this._activePrompts = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+        console.log(this._activePrompts)
+      })
     },
 
     async fetchPromptById(id) {

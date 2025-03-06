@@ -86,7 +86,6 @@ export const useNotificationStore = defineStore('notification', {
 
       notification.created = Date.now()
       notification.id = Date.now().toString()
-      notification.message = notification.message.length > 50 ? notification.message.substring(0, 50) + '...' : notification.message
       notification.read = false
 
       subscribers = subscribers.filter((subscriber) => subscriber !== userStore.getUser.uid)
@@ -94,6 +93,14 @@ export const useNotificationStore = defineStore('notification', {
       subscribers?.forEach(async (subscriber) => {
         await setDoc(doc(db, 'users', subscriber, 'notifications', notification.id), notification)
       })
+    },
+
+    async notifyWinner(winner, notification) {
+      if (!winner) return
+      notification.created = Date.now()
+      notification.id = Date.now().toString()
+      notification.read = false
+      await setDoc(doc(db, 'users', winner, 'notifications', notification.id), notification)
     },
 
     async readList() {

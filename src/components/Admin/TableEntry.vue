@@ -211,7 +211,7 @@
 
 <script setup>
 import { useQuasar } from 'quasar'
-import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore } from 'src/stores'
+import { useEntryStore, useErrorStore, usePromptStore, useUserStore, useShareStore, useNotificationStore } from 'src/stores'
 import { dayMonthYear, shortMonthDayTime } from 'src/utils/date'
 import { nextTick, onMounted, ref, watch, watchEffect } from 'vue'
 import EntryCard from './EntryCard.vue'
@@ -264,7 +264,7 @@ const userStore = useUserStore()
 const cryptoTransactions = useCryptoTransactionStore()
 const router = useRouter()
 const shareStore = useShareStore()
-
+const notificationStore = useNotificationStore()
 const columns = [
   {},
   { name: 'created', align: 'left', label: 'Created', field: (row) => shortMonthDayTime(row.created), sortable: true },
@@ -427,6 +427,13 @@ async function onSelectWinner(entry) {
           .finally(() => {
             selectWinnerDialog.value.show = false
           })
+
+        await notificationStore.notifyWinner(payload.entry.author.uid, {
+          link: '/admin',
+          slug: '/admin',
+          message: `Congratulations! You are selected winner for ${_currentPrompt.value.title} prompt. Click to withdraw the prize from admin panel`,
+          type: 'winner'
+        })
 
         selectWinnerDialog.value.show = false
       } else {

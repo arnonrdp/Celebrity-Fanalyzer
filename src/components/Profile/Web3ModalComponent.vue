@@ -42,8 +42,8 @@
         <span class="q-ml-sm">Are you sure you want to set this as your new wallet address?</span>
       </q-card-section>
       <q-card-actions align="right">
-        <q-btn color="primary" label="Cancel" v-close-popup />
-        <q-btn color="negative" data-test="confirm-remove-wallet" label="Confirm" @click.prevent.stop="updateWalletInfo()" />
+        <q-btn color="primary" data-test="cancel-address-change" label="Cancel" v-close-popup />
+        <q-btn color="negative" data-test="confirm-change-wallet" label="Confirm" @click.prevent.stop="updateWalletInfo()" />
       </q-card-actions>
     </q-card>
   </q-dialog>

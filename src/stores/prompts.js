@@ -333,7 +333,7 @@ export const usePromptStore = defineStore('prompts', {
     },
 
     async updateEscrowId(payload) {
-      const { promptId, escrowId } = payload
+      const { promptId, escrowId, paymentStatus, winnerReward } = payload
 
       if (!promptId || !escrowId) {
         throw new Error('Both promptId and escrowId are required.')
@@ -351,14 +351,20 @@ export const usePromptStore = defineStore('prompts', {
 
           const prompt = promptDoc.data()
           prompt.escrowId = escrowId
+          prompt.winnerReward = winnerReward
+          prompt.paymentStatus = paymentStatus
           prompt.updated = Timestamp.fromDate(new Date())
 
           transaction.update(promptDocRef, prompt)
         })
 
         // Update local state or cache if needed
-        this._prompts = this._prompts?.map((element) => (element.id === promptId ? { ...element, escrowId } : element))
-        this._monthPrompt = this._monthPrompt?.map((element) => (element.id === promptId ? { ...element, escrowId } : element))
+        this._prompts = this._prompts?.map((element) =>
+          element.id === promptId ? { ...element, escrowId, winnerReward, paymentStatus } : element
+        )
+        this._monthPrompt = this._monthPrompt?.map((element) =>
+          element.id === promptId ? { ...element, escrowId, winnerReward, paymentStatus } : element
+        )
       } catch (error) {
         console.error('Error updating escrowId:', error)
       } finally {

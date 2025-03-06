@@ -77,7 +77,9 @@ async function onSubmit(event) {
         _prompt.value.escrowId = result.events[0].args.escrowId
         const payload = {
           promptId: _prompt.value.id,
-          escrowId: result.events[0].args.escrowId
+          escrowId: result.events[0].args.escrowId,
+          paymentStatus: 'Payment successful',
+          winnerReward: usdAmount.value
         }
         await promptStore
           .updateEscrowId(payload)

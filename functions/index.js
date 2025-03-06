@@ -1,3 +1,5 @@
+import { getAdCampaignCosts } from 'app/src/web3/adCampaignManager'
+
 const functions = require('firebase-functions')
 const admin = require('firebase-admin')
 admin.initializeApp()
@@ -47,16 +49,21 @@ async function calculateTotalVisits(advertiseDocRef) {
 }
 
 async function calculateAmountSpent(totalClicks, totalImpressions, totalVisits) {
-  return (
-    import.meta.env.VITE_ADVERTISE_CLICK_RATE * totalClicks +
-    import.meta.env.VITE_ADVERTISE_IMPRESSION_RATE * totalImpressions +
-    import.meta.env.VITE_ADVERTISE_VIEWS_RATE * totalVisits
-  )
+  const advertiseCosts = await getAdCampaignCosts()
+  if (advertiseCosts.status !== 'success') {
+    const result =
+      parseFloat(advertiseCosts.data.costPerClick) * totalClicks +
+      parseFloat(advertiseCosts.data.costPerImpression) * totalImpressions +
+      parseFloat(advertiseCosts.data.costPerImpression) * totalVisits
+    return result
+  } else {
+    console.log('Failed to get the cost of the advertise', advertiseCosts)
+    $q.notify({ type: 'negative', message: 'Failed to get the cost of the advertise' })
+  }
 }
 
 async function updateAdvertiseStatus(docId) {
   const advertiseDocRef = db.collection('advertises').doc(docId)
-
   const docData = (await advertiseDocRef.get()).data()
   const myBudget = Number(docData.budget) ?? 0
 

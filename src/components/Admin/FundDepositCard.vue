@@ -79,7 +79,7 @@ async function onSubmit(event) {
           promptId: _prompt.value.id,
           escrowId: result.events[0].args.escrowId,
           paymentStatus: 'Payment successful',
-          winnerReward: usdAmount.value
+          rewardAmount: usdAmount.value
         }
         await promptStore
           .updateEscrowId(payload)

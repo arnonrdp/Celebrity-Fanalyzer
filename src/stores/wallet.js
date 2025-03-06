@@ -36,6 +36,13 @@ export const useWalletStore = defineStore('wallet', {
           symbol: 'MATIC',
           decimals: 18
         }
+      },
+      hardhat: {
+        chainId: 31337,
+        name: 'Hardhat Network',
+        currency: 'ETH',
+        explorerUrl: '',
+        rpcUrl: 'http://127.0.0.1:8545'
       }
     }
   }),

@@ -461,7 +461,7 @@ async function _withdrawRemainingBudget(advertise, currentAmounSpent) {
   } else {
     const result = await requestAndApproveWithdrawal({ campaignCode: advertise.campaignCode, currentAmounSpentInMatic: currentAmounSpent })
     if (result.status.includes('success')) {
-      $q.notify({ message: 'Remaing budget withdrawn successfully ', type: 'positive' })
+      $q.notify({ message: 'Remaining budget withdrawn successfully ', type: 'positive' })
       //let's change the advertise status
       await _completeAdvertise(advertise)
     } else {

@@ -87,7 +87,7 @@
         <q-separator v-if="!isAdd" spaced />
         <p v-if="isAdd" v-html="post?.content" class="q-mt-sm text-body1"></p>
         <p v-else class="q-mt-md text-body1" v-html="post?.description"></p>
-        <ShowcaseArt v-if="post?.showcase?.arts?.length" :showcase="post.showcase" />
+        <ShowcaseArt v-if="post?.showcase?.arts?.length || post?.showcase?.artist?.photo" :showcase="post.showcase" />
         <q-separator v-if="!isAdd" inset />
         <div class="text-center q-pt-md">
           <q-btn

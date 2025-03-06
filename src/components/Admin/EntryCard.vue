@@ -87,7 +87,7 @@
                   data-test="file-image"
                   :disable="!entry.prompt"
                   :hint="!entry.prompt ? 'Select prompt first' : !entry.image ? '*Image is required. Max size is 2MB.' : ''"
-                  label="Image"
+                  label="Entry Cover Image"
                   :max-total-size="2097152"
                   :required="!id"
                   use-chips

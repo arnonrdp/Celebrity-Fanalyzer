@@ -92,6 +92,7 @@ const entry = computed(() => {
       router.currentRoute.value.href.slice(1, -3).replace('/', '-').replace('/', '') === entry.id
   )
 })
+
 watchEffect(async () => {
   if (entry.value?.author?.uid) {
     await statStore.getUserRating(entry.value?.author?.uid)

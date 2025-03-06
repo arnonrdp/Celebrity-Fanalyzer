@@ -496,7 +496,11 @@ async function onSubmit() {
       $q.notify({ type: 'info', message: 'Prompt successfully edited' })
     } else {
       await promptStore.addPrompt(prompt)
-      $q.notify({ type: 'positive', message: 'Prompt successfully submitted. Please make sure to fund it.' })
+      if (prompt.paymentStatus === 'Payment successful') {
+        $q.notify({ type: 'positive', message: 'Prompt successfully submitted.' })
+      } else {
+        $q.notify({ type: 'positive', message: 'Prompt successfully submitted. Please make sure to fund it.' })
+      }
     }
 
     emit('hideDialog', prompt.slug)

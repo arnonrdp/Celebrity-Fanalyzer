@@ -107,11 +107,17 @@ const computedPromptsByStatus = computed(() => {
   if (status.value === 'Active' || promptStore.filterOngoingCompetitions) {
     filteredPrompts = filteredPrompts
       .filter((prompt) => {
-        const publicationDate = new Date(prompt.publicationDate)
-        const endDate = new Date(prompt.endDate)
-        return prompt.escrowId && publicationDate <= today && endDate >= today && !prompt.isWinner && !prompt.hasWinner
+        const publicationDate = prompt.publicationDate ? new Date(prompt.publicationDate) : null
+        const endDate = prompt.endDate ? new Date(prompt.endDate) : null
+
+        return (
+          prompt.escrowId &&
+          (!publicationDate || !endDate || (publicationDate <= today && endDate >= today)) &&
+          !prompt.isWinner &&
+          !prompt.hasWinner
+        )
       })
-      .sort((a, b) => new Date(a.publicationDate) - new Date(b.publicationDate))
+      .sort((a, b) => new Date(a.publicationDate || 0) - new Date(b.publicationDate || 0))
   }
 
   if (status.value === 'Upcoming') {

@@ -150,16 +150,20 @@ export const usePromptStore = defineStore('prompts', {
 
       try {
         let queryRef = collection(db, 'prompts')
-        queryRef = query(
-          queryRef,
-          where('hasWinner', '==', null),
-          where('escrowId', '!=', null),
-          where('publicationDate', '<=', formattedDate),
-          where('endDate', '>=', formattedDate)
-        )
+        const queryConstraints = [where('hasWinner', '==', null), where('escrowId', '!=', null)]
 
+        queryRef = query(queryRef, ...queryConstraints)
         const querySnapshot = await getDocs(queryRef)
-        const activePrompts = await getPrompts(querySnapshot, userStore)
+
+        const activePrompts = []
+        querySnapshot.forEach((doc) => {
+          const data = doc.data()
+
+          if ((!data.publicationDate || data.publicationDate <= formattedDate) && (!data.endDate || data.endDate >= formattedDate)) {
+            activePrompts.push({ id: doc.id, ...data })
+          }
+        })
+
         this._activePrompts = activePrompts
         return activePrompts
       } catch (error) {

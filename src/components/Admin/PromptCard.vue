@@ -225,53 +225,55 @@
           </q-card-section>
         </q-step>
         <q-step icon="payments" :name="3" :done="step > 3" :disable="isNextStepDisabled" title="Deposit">
-          <q-card-section class="q-mt-md q-pt-none" style="height: 65vh">
-            <div class="row items-center q-gutter-md">
-              <span class="text-subtitle1">Winner Prize Deposit Escrow Fund</span>
-              <q-btn
-                class="deposite-button"
-                :disable="!!prompt.rewardAmount"
-                :color="
-                  prompt.paymentStatus === 'Pay later' ? 'orange' : prompt.paymentStatus === 'Payment successful' ? 'positive' : 'secondary'
-                "
-                :label="
-                  prompt.paymentStatus === 'Pay later'
-                    ? 'Pay later'
-                    : prompt.paymentStatus === 'Payment successful'
-                      ? `${prompt.rewardAmount}$ Deposited`
-                      : 'Deposit Funds'
-                "
-                :icon="
-                  prompt.paymentStatus === 'Pay later'
-                    ? 'schedule'
-                    : prompt.paymentStatus === 'Payment successful'
-                      ? 'check_circle'
-                      : 'account_balance_wallet'
-                "
-              >
-                <q-menu class="deposite-menu">
-                  <div class="row items-center q-gutter-xs" style="margin-top: 1px">
-                    <q-btn color="orange" label="Pay later" v-close-popup @click="updatepaymentStatus('Pay later')" />
-                    <q-btn label="Pay now" color="green" v-close-popup @click="onProceedDepositFundDialog" />
-                  </div>
-                </q-menu>
-              </q-btn>
+          <q-card-section class="q-mt-md q-pt-none column justify-start items-center" style="height: 65vh">
+            <div class="text-h4 text-primary font-weight-bold text-center">Winner Prize Deposit Escrow Fund</div>
 
-              <q-dialog v-model="proceedDepositFundDialog.show" persistent>
-                <q-card style="width: 400px; max-width: 60vw">
-                  <q-card-section class="q-pb-none">
-                    <h6 class="q-my-sm">Escrow Fund Deposit</h6>
-                  </q-card-section>
-                  <FundDepositCard
-                    :walletAddress="proceedDepositFundDialog.walletAddress"
-                    :prompt="proceedDepositFundDialog.prompt"
-                    @paymentStatus="updatepaymentStatus($event)"
-                    @winnerReward="updateWinnerReward($event)"
-                    @hideDialog="proceedDepositFundDialog.show = false"
-                  />
-                </q-card>
-              </q-dialog>
+            <div class="q-mt-xs text-subtitle1 text-center q-mt-sm q-mb-lg">
+              You can deposit funds to secure the prize for the winner. Please select either "Pay now" or "Pay later".
             </div>
+
+            <q-btn
+              class="deposite-button"
+              :disable="!!prompt.rewardAmount"
+              :color="
+                prompt.paymentStatus === 'Pay later' ? 'orange' : prompt.paymentStatus === 'Payment successful' ? 'positive' : 'secondary'
+              "
+              :label="
+                prompt.paymentStatus === 'Pay later'
+                  ? 'Pay later'
+                  : prompt.paymentStatus === 'Payment successful'
+                    ? `${prompt.rewardAmount}$ Deposited`
+                    : 'Deposit Funds'
+              "
+              :icon="
+                prompt.paymentStatus === 'Pay later'
+                  ? 'schedule'
+                  : prompt.paymentStatus === 'Payment successful'
+                    ? 'check_circle'
+                    : 'account_balance_wallet'
+              "
+            >
+              <q-menu class="deposite-menu">
+                <div class="row items-center q-gutter-xs" style="margin-top: 1px">
+                  <q-btn color="orange" label="Pay later" v-close-popup @click="updatepaymentStatus('Pay later')" />
+                  <q-btn label="Pay now" color="green" v-close-popup @click="onProceedDepositFundDialog" />
+                </div>
+              </q-menu>
+            </q-btn>
+
+            <q-dialog v-model="proceedDepositFundDialog.show" persistent>
+              <q-card style="width: 400px; max-width: 60vw">
+                <q-card-section class="q-pb-none">
+                  <h6 class="q-my-sm">Escrow Fund Deposit</h6>
+                </q-card-section>
+                <FundDepositCard
+                  :walletAddress="proceedDepositFundDialog.walletAddress"
+                  promptCardUsed
+                  @paymentDetails="updatePaymentDetails($event)"
+                  @hideDialog="proceedDepositFundDialog.show = false"
+                />
+              </q-card>
+            </q-dialog>
           </q-card-section>
         </q-step>
 
@@ -397,7 +399,6 @@ async function onProceedDepositFundDialog() {
   } else {
     proceedDepositFundDialog.value.show = true
     proceedDepositFundDialog.value.walletAddress = customWeb3modal.getAddress()
-    proceedDepositFundDialog.value.prompt = prompt
   }
 }
 
@@ -528,12 +529,19 @@ function captureCamera(imageBlob) {
   imageModel.value = imageBlob
   uploadPhoto()
 }
+
 function updatepaymentStatus(data) {
   prompt.paymentStatus = data
 }
-function updateWinnerReward(data) {
-  prompt.rewardAmount = data
+
+async function updatePaymentDetails(data) {
+  prompt.escrowId = data.escrowId
+  prompt.paymentStatus = data.paymentStatus
+  prompt.rewardAmount = data.rewardAmount
+
+  onSubmit()
 }
+
 const isNextStepDisabled = computed(() => {
   return (
     !prompt.title ||

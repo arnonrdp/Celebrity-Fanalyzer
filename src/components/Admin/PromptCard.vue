@@ -205,7 +205,26 @@
           </q-card-section>
         </q-step>
 
-        <q-step icon="money" :name="2" :done="step > 2" :disable="isNextStepDisabled" title="Deposit & Artist Carousel">
+        <q-step
+          caption="Optional"
+          icon="create_new_folder"
+          :name="2"
+          :done="step > 2"
+          :disable="isNextStepDisabled"
+          title="Artist Carousel"
+        >
+          <q-card-section class="q-mt-md q-pt-none" style="height: 65vh">
+            <div class="q-my-lg">
+              <ShowcaseCard
+                collectionName="prompt"
+                :date="prompt.date"
+                v-model:arts="prompt.showcase.arts"
+                v-model:artist="prompt.showcase.artist"
+              />
+            </div>
+          </q-card-section>
+        </q-step>
+        <q-step icon="payments" :name="3" :done="step > 3" :disable="isNextStepDisabled" title="Deposit">
           <q-card-section class="q-mt-md q-pt-none" style="height: 65vh">
             <div class="row items-center q-gutter-md">
               <span class="text-subtitle1">Winner Prize Deposit Escrow Fund</span>
@@ -237,15 +256,21 @@
                   </div>
                 </q-menu>
               </q-btn>
-            </div>
 
-            <div class="q-my-lg">
-              <ShowcaseCard
-                collectionName="prompt"
-                :date="prompt.date"
-                v-model:arts="prompt.showcase.arts"
-                v-model:artist="prompt.showcase.artist"
-              />
+              <q-dialog v-model="proceedDepositFundDialog.show" persistent>
+                <q-card style="width: 400px; max-width: 60vw">
+                  <q-card-section class="q-pb-none">
+                    <h6 class="q-my-sm">Escrow Fund Deposit</h6>
+                  </q-card-section>
+                  <FundDepositCard
+                    :walletAddress="proceedDepositFundDialog.walletAddress"
+                    :prompt="proceedDepositFundDialog.prompt"
+                    @paymentStatus="updatepaymentStatus($event)"
+                    @winnerReward="updateWinnerReward($event)"
+                    @hideDialog="proceedDepositFundDialog.show = false"
+                  />
+                </q-card>
+              </q-dialog>
             </div>
           </q-card-section>
         </q-step>
@@ -261,7 +286,7 @@
               <q-btn v-if="step > 1" flat rounded @click="$refs.stepper.previous()" label="Back" :disable="promptStore.isLoading" />
 
               <q-btn
-                v-if="step > 1"
+                v-if="step === 3"
                 color="primary"
                 data-test="button-submit"
                 :disable="isNextStepDisabled || !prompt.paymentStatus"
@@ -272,7 +297,7 @@
               />
 
               <q-btn
-                v-if="step < 2"
+                v-if="step < 3"
                 color="primary"
                 :disable="isNextStepDisabled"
                 label="Continue"
@@ -287,20 +312,6 @@
     </q-form>
     <q-dialog v-model="openCamera" persistent>
       <CaptureCamera @onCapture="captureCamera" />
-    </q-dialog>
-    <q-dialog v-model="proceedDepositFundDialog.show" persistent>
-      <q-card style="width: 400px; max-width: 60vw">
-        <q-card-section class="q-pb-none">
-          <h6 class="q-my-sm">Escrow Fund Deposit</h6>
-        </q-card-section>
-        <FundDepositCard
-          :walletAddress="proceedDepositFundDialog.walletAddress"
-          :prompt="proceedDepositFundDialog.prompt"
-          @paymentStatus="updatepaymentStatus($event)"
-          @winnerReward="updateWinnerReward($event)"
-          @hideDialog="proceedDepositFundDialog.show = false"
-        />
-      </q-card>
     </q-dialog>
   </q-card>
 </template>

@@ -1,11 +1,11 @@
 <template>
   <q-table
-    v-if="prompts && userStore.isEditorOrAbove"
+    v-if="prompts"
     flat
     bordered
     hide-bottom
     class="q-ma-md custom-table"
-    title="Manage Prompts & Entries"
+    :title="userStore.isEditorOrAbove ? 'Manage Prompts & Entries' : 'My Prompts'"
     :columns="columns"
     :filter="filter"
     :loading="promptStore.isLoading"
@@ -41,7 +41,7 @@
 
         <q-td class="text-center" auto-width style="width: 101px">
           <div style="width: 69px">
-            {{ props.row.date }}
+            {{ props.row.creationDate || props.row.date }}
           </div>
         </q-td>
         <q-td class="authorRef text-center">
@@ -59,10 +59,20 @@
             {{ props.row.title }}
           </a>
         </q-td>
+        <q-td auto-width>
+          <div class="text-left">
+            {{ props.row.publicationDate }}
+          </div>
+        </q-td>
+
+        <q-td auto-width>
+          <div class="text-left">
+            {{ props.row.endDate }}
+          </div>
+        </q-td>
         <q-td class="text-right">
           <span v-if="!props.row?.escrowId">
             <q-btn
-              v-if="userStore.isEditorOrAbove"
               flat
               round
               color="green"
@@ -76,7 +86,6 @@
             </q-btn>
           </span>
           <q-btn
-            v-if="userStore.isEditorOrAbove"
             flat
             round
             color="warning"
@@ -89,7 +98,6 @@
             <q-tooltip>Edit</q-tooltip>
           </q-btn>
           <q-btn
-            v-if="userStore.isEditorOrAbove"
             flat
             round
             color="negative"
@@ -111,6 +119,7 @@
             v-else
             :rows="getEntriesForPrompt(props.row.id).sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
             :currentPrompt="props.row"
+            chilledEntryTable
             :loaded-entries="entryStore._loadedEntries"
             @update-entry="handleUpdateEntry"
             @delete-entry="handleDeleteEntry"
@@ -120,11 +129,6 @@
       </q-tr>
     </template>
   </q-table>
-  <TableEntry
-    v-else
-    :filter="filter"
-    :rows="entryStore.getUserRelatedEntries?.sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
-  />
   <div class="row justify-center q-mr-md float-right">
     <q-spinner v-if="promptStore.isLoading && promptStore.getPrompts?.length" color="primary" size="30px" :thickness="5" />
     <q-btn
@@ -136,6 +140,31 @@
       data-test="load-more-btn"
     />
   </div>
+
+  <br />
+  <br />
+  <!-- <q-separator color="primary" /> -->
+
+  <TableEntry
+    v-if="!userStore.isEditorOrAbove"
+    :filter="filter"
+    :rows="entryStore.getUserRelatedEntries?.sort((a, b) => new Date(b.created?.seconds) - new Date(a.created?.seconds))"
+    :loaded-entries="entryStore._loadedEntries"
+    @update-entry="handleUpdateEntry"
+    @delete-entry="handleDeleteEntry"
+  />
+
+  <div class="row justify-center q-mr-md float-right">
+    <q-btn
+      v-if="!userStore.isEditorOrAbove && entryStore.showLastVisible"
+      label="Load More"
+      color="primary"
+      data-test="load-more-btn"
+      :loading="entryStore.isLoading"
+      @click="loadMoreEntries"
+    />
+  </div>
+
   <q-dialog v-model="deleteDialog.show">
     <q-card>
       <q-card-section class="q-pb-none">
@@ -192,25 +221,26 @@ defineEmits(['openPromptDialog'])
 
 const columns = [
   {},
-  { name: 'date', align: 'center', label: 'Date', field: (row) => row.date, sortable: true },
+  { name: 'creationDate', align: 'center', label: 'Creation Date', field: (row) => row.creationDate, sortable: true },
   { name: 'author', align: 'center', label: 'Author', field: (row) => row.author?.displayName, sortable: true },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
+  { name: 'publicationDate', align: 'center', label: 'Publication Date', field: (row) => row.publicationDate, sortable: true },
+  { name: 'endDate', align: 'center', label: 'End Date', field: (row) => row.endDate, sortable: true },
   {}
 ]
 const deleteDialog = ref({})
 const filter = ref('')
-const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
+const pagination = { sortBy: 'creationDate', descending: true, rowsPerPage: 0 }
 const maxWidth = ref(0)
 
 const prompts = ref([])
 const proceedDepositFundDialog = ref({})
 
 onMounted(async () => {
-  if (userStore.isEditorOrAbove) {
-    entryStore._loadedEntries = []
-    if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) await promptStore.fetchPrompts()
-  } else {
-    await entryStore.fetchUserRelatedEntries(userStore.getUserId)
+  entryStore._loadedEntries = []
+  if (!promptStore.getPrompts?.length || promptStore.getPrompts?.length < 5) await promptStore.fetchPrompts(false, 5, true)
+  if (!entryStore.getUserRelatedEntries.length) {
+    await entryStore.fetchUserRelatedEntries(userStore.getUserId, true)
   }
   window.addEventListener('resize', updateMaxWidth)
   updateMaxWidth()
@@ -224,7 +254,11 @@ const isLoaded = computed(() => promptStore.getPrompts)
 const isLoading = computed(() => promptStore.isLoading || (entryStore.isLoading && !isLoaded.value))
 
 watchEffect(async () => {
-  prompts.value = promptStore.getPrompts
+  if (userStore.isEditorOrAbove) {
+    prompts.value = promptStore.getPrompts
+  } else {
+    prompts.value = promptStore.getPrompts?.filter((data) => data.author.uid === userStore.getUser.uid) ?? []
+  }
 })
 
 function updateMaxWidth() {
@@ -254,11 +288,14 @@ function onDeletePrompt(id) {
 const loadMorePrompts = async () => {
   if (!promptStore.isLoading && promptStore._hasMore) {
     try {
-      await promptStore.fetchPrompts(true, 5)
+      await promptStore.fetchPrompts(true, 5, true)
     } catch (error) {
       await errorStore.throwError(error, 'Error loading more prompts')
     }
   }
+}
+function loadMoreEntries() {
+  entryStore.fetchUserRelatedEntries(userStore.getUserId, true)
 }
 
 async function handleUpdateEntry({ _entry, _prompt }) {
@@ -295,7 +332,7 @@ async function handleUpdateEntry({ _entry, _prompt }) {
   })
 
   // Fetch updated prompts
-  await promptStore.fetchPrompts()
+  await promptStore.fetchPrompts(false, 5, true)
 }
 
 async function share(socialNetwork, collectionName, id) {
@@ -344,7 +381,7 @@ function handleDeleteEntry(entryId, promptId) {
     return prompt
   })
 
-  promptStore.fetchPrompts()
+  promptStore.fetchPrompts(false, 5, true)
 }
 
 //proceed deposit funds.
@@ -370,7 +407,7 @@ watch(filter, async (newSearch) => {
   if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
     if (newSearch.trim()) {
       const promptsCount = promptStore._totalPrompts ? promptStore._totalPrompts : promptStore.getTotalPromptsCount
-      await promptStore.fetchPrompts(true, promptsCount)
+      await promptStore.fetchPrompts(true, promptsCount, true)
     }
   }
 })

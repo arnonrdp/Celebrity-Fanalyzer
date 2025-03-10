@@ -1,4 +1,7 @@
 /* app global css */
+body {
+  --w3m-z-index: 7000;
+}
 
 html {
   font-size: 16px;

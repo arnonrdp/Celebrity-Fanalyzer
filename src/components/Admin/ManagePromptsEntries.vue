@@ -41,7 +41,7 @@
 
         <q-td class="text-center" auto-width style="width: 101px">
           <div style="width: 69px">
-            {{ props.row.creationDate }}
+            {{ props.row.creationDate || props.row.date }}
           </div>
         </q-td>
         <q-td class="authorRef text-center">
@@ -221,7 +221,7 @@ defineEmits(['openPromptDialog'])
 
 const columns = [
   {},
-  { name: 'creationDate', align: 'center', label: 'Creation Date', field: (row) => row.creatinDate, sortable: true },
+  { name: 'creationDate', align: 'center', label: 'Creation Date', field: (row) => row.creationDate, sortable: true },
   { name: 'author', align: 'center', label: 'Author', field: (row) => row.author?.displayName, sortable: true },
   { name: 'title', align: 'left', label: 'Title', field: 'title', sortable: true },
   { name: 'publicationDate', align: 'center', label: 'Publication Date', field: (row) => row.publicationDate, sortable: true },

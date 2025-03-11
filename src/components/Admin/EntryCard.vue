@@ -230,7 +230,7 @@ const promptOptions = computed(
 )
 
 onMounted(() => {
-  promptStore.fetchActivePrompts()
+  promptStore.activePromptsListener()
   if (props.id) {
     entry.author = { label: props.author?.displayName, value: props.author?.uid }
     entry.description = props.description

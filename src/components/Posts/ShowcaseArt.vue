@@ -25,7 +25,7 @@
       >
         <q-img class="rounded-borders" fit="contain" :src="art" @click.stop="openDialog = true" />
       </q-carousel-slide>
-      <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none" :name="showcase?.arts.length">
+      <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none" :name="showcase?.arts.length" style="max-height: 450px">
         <q-img v-if="showcase.artist.photo" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
         <p class="col-sm-6 col-xs-12 flex items-center q-pa-md">{{ showcase.artist.info }}</p>
       </q-carousel-slide>

@@ -12,7 +12,7 @@
         no-data-label="No advertisements found."
         no-results-label="No advertisements found for your search."
         :filter="filter"
-        :rows="advertises"
+        :rows="localAdvertises"
         :columns="advertises.length > 0 ? columns : []"
         :loading="advertiseStore.isLoading"
         :rows-per-page-options="[0]"
@@ -144,7 +144,7 @@
             >
               <q-tooltip>Unpublish</q-tooltip>
             </q-icon>
-            {{ showStatus(props.row) }}
+            {{ props.row.status }}
           </q-td>
         </template>
         <template #body-cell-content="props">
@@ -159,8 +159,8 @@
         </template>
         <template #body-cell-total_cost="props">
           <q-td class="text-right">
-            {{ viewMatic(computeAdvertisementMatic(props.row.totalImpressions, props.row.totalClicks, props.row.totalVisits)) }}
-            <q-tooltip>{{ computeAdvertisementMatic(props.row.totalImpressions, props.row.totalClicks, props.row.totalVisits) }}</q-tooltip>
+            {{ viewMatic(props.row.totalCost) }}
+            <q-tooltip>{{ props.row.totalCost }}</q-tooltip>
           </q-td>
         </template>
       </q-table>
@@ -250,7 +250,7 @@ import { useQuasar } from 'quasar'
 import { useAdvertiseStore, useErrorStore, useUserStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 import { getCurrentDate, calculateEndDate, computedDuration } from 'src/utils/date'
-import { claimPayment, requestAndApproveWithdrawal, getEventsForCampaign } from 'app/src/web3/adCampaignManager'
+import { claimPayment, requestAndApproveWithdrawal, getEventsForCampaign, getAdCampaignCosts } from 'app/src/web3/adCampaignManager'
 import { customWeb3modal } from 'app/src/web3/walletConnect'
 
 const props = defineProps({
@@ -259,6 +259,31 @@ const props = defineProps({
     default: () => [],
     type: Array
   }
+})
+
+const localAdvertises = ref([])
+
+// Watch for changes in props.advertises
+watch(
+  () => props.advertises,
+  async (newAdvertises) => {
+    if (newAdvertises && newAdvertises.length > 0) {
+      // Compute and add totalCost for each advertisement
+      const advertisesWithCost = await Promise.all(
+        newAdvertises.map(async (advertise) => ({
+          ...advertise,
+          totalCost: await computeAdvertisementMatic(advertise.totalImpressions, advertise.totalClicks, advertise.totalVisits),
+          status: await showStatus(advertise)
+        }))
+      )
+      localAdvertises.value = advertisesWithCost
+    }
+  },
+  { immediate: true }
+)
+
+onMounted(async () => {
+  await advertiseStore.fetchAdvertises(selectedDataType?.value.label)
 })
 
 const router = useRouter()
@@ -300,11 +325,20 @@ const dataOptions = ref(
 )
 
 async function calculateAmountSpent(advertise) {
-  return (
-    import.meta.env.VITE_ADVERTISE_CLICK_RATE * advertise.totalClicks +
-    import.meta.env.VITE_ADVERTISE_IMPRESSION_RATE * advertise.totalImpressions +
-    import.meta.env.VITE_ADVERTISE_VIEWS_RATE * advertise.totalVisits
-  )
+  const advertiseCosts = await getAdCampaignCosts()
+  console.log('advertiseCosts====== ', advertiseCosts)
+  console.log('the current advertise ====== ', advertise)
+  if (advertiseCosts.status.includes('success')) {
+    const result =
+      parseFloat(advertiseCosts.data.costPerClick) * advertise.totalClicks +
+      parseFloat(advertiseCosts.data.costPerImpression) * advertise.totalImpressions +
+      parseFloat(advertiseCosts.data.costPerImpression) * advertise.totalVisits
+    console.log('result====== ', result)
+    return result
+  } else {
+    console.log('Failed to get the cost of the advertise', advertiseCosts)
+    $q.notify({ type: 'negative', message: 'Failed to get the cost of the advertise' })
+  }
 }
 
 async function _getEventsForCampaign(advertise) {
@@ -649,11 +683,20 @@ watch(selectedDataType, (newType) => {
 
 const maticCache = new Map()
 
-function computeAdvertisementMatic(impressions = 0, clicks = 0, views = 0) {
+async function computeAdvertisementMatic(impressions = 0, clicks = 0, views = 0) {
   const key = `${impressions}-${clicks}-${views}`
-  const impressionsMatic = impressions * import.meta.env.VITE_ADVERTISE_IMPRESSION_RATE
-  const clicksMatic = clicks * import.meta.env.VITE_ADVERTISE_CLICK_RATE
-  const viewsMatic = views * import.meta.env.VITE_ADVERTISE_VIEWS_RATE
+  const advertiseCosts = await getAdCampaignCosts()
+  let impressionsMatic = 0
+  let clicksMatic = 0
+  let viewsMatic = 0
+  if (advertiseCosts.status.includes('success')) {
+    impressionsMatic = impressions * parseFloat(advertiseCosts.data.costPerImpression)
+    clicksMatic = clicks * parseFloat(advertiseCosts.data.costPerClick)
+    viewsMatic = views * parseFloat(advertiseCosts.data.costPerImpression)
+  } else {
+    console.log('Failed to get the cost of the advertise', advertiseCosts)
+    $q.notify({ type: 'negative', message: 'Failed to get the cost of the advertise' })
+  }
 
   if (maticCache.has(key)) {
     return maticCache.get(key)
@@ -673,10 +716,10 @@ function viewMatic(matic) {
   return maticSplit[0] + '.' + floatNumbers
 }
 
-function showStatus(data) {
+async function showStatus(data) {
   const create = calculateStatus(data.publishDate)
   const ended = calculateStatus(data.endDate)
-  const budgetCrossed = computeAdvertisementMatic(data.totalImpressions, data.totalClicks, data.totalVisits) > Number(data.budget)
+  const budgetCrossed = (await computeAdvertisementMatic(data.totalImpressions, data.totalClicks, data.totalVisits)) > Number(data.budget)
   if (!create) {
     return 'Publish date pending'
   } else if (budgetCrossed || data.status === 'Budget Crossed') {

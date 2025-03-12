@@ -107,6 +107,21 @@
                   />
                 </template>
               </q-field>
+              <q-select
+                behavior="menu"
+                counter
+                data-test="select-categories"
+                hide-dropdown-icon
+                :hint="!prompt.categories ? 'Category is required. Click Enter ↵ to add a new category' : ''"
+                input-debounce="0"
+                label="Categories"
+                multiple
+                new-value-mode="add-unique"
+                use-input
+                use-chips
+                :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
+                v-model="prompt.categories"
+              />
               <div class="row">
                 <div class="col-8">
                   <q-file
@@ -114,7 +129,7 @@
                     counter
                     data-test="file-image"
                     :hint="!prompt.image ? '*Image is required. Max size is 2MB.' : ''"
-                    label="Choose File"
+                    label="Select Prompt Image"
                     :max-total-size="2097152"
                     :required="!id"
                     use-chips
@@ -137,21 +152,6 @@
                   @click="openCamera = true"
                 ></q-btn>
               </div>
-              <q-select
-                behavior="menu"
-                counter
-                data-test="select-categories"
-                hide-dropdown-icon
-                :hint="!prompt.categories ? 'Category is required. Click Enter ↵ to add a new category' : ''"
-                input-debounce="0"
-                label="Categories"
-                multiple
-                new-value-mode="add-unique"
-                use-input
-                use-chips
-                :rules="[(val) => val?.length > 0 || 'Please select at least one category']"
-                v-model="prompt.categories"
-              />
               <div class="text-center">
                 <q-img v-if="prompt.image" class="q-mt-md" :src="prompt.image" fit="contain" style="max-height: 40vh; max-width: 80vw" />
               </div>

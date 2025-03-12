@@ -23,14 +23,10 @@
     <q-btn flat icon="add_circle_outline" label="Upload Artist Photo" rounded @click="onUploadArtist" />
     <div v-if="modelArtistPhoto" class="items-center no-wrap q-my-md q-pa-md rounded-borders col shadow-1">
       <q-spinner v-if="storageStore.isLoading && !modelArtistPhoto" class="q-mx-auto" color="primary" size="3em" style="width: 50%" />
-      <q-img
-        v-else
-        class="artist-img q-mr-md rounded-borders"
-        fit="contain"
-        :src="modelArtistPhoto"
-        spinner-color="primary"
-        data-test="author-image"
-      />
+      <div v-else class="artist-img-cont">
+        <q-img class="q-mr-md rounded-borders" fit="contain" :src="modelArtistPhoto" spinner-color="primary" data-test="author-image" />
+        <q-btn class="dlt-btn" color="negative" icon="delete" round size="sm" @click="removeArtistPhoto()" data-test="remove-art-btn" />
+      </div>
     </div>
 
     <q-file
@@ -137,6 +133,12 @@ function removeArt(file) {
   emit('update:arts', modelArts.value)
 }
 
+function removeArtistPhoto() {
+  modelArtistPhoto.value = ''
+  emit('update:artist', { ...props.artist, photo: modelArtistPhoto.value })
+  emit('updateRecentArtistImage', modelArtistPhoto.value)
+}
+
 async function addArtistPhoto(files) {
   modelArtistPhoto.value = ''
   modelArtistPhoto.value = await uploadAndSetImage(files, `images/${props.collectionName}-${props.date}-artist`)
@@ -150,20 +152,30 @@ function addArtistInfo() {
 </script>
 
 <style lang="scss" scoped>
-.trash-icon {
+.artist-img-cont {
+  max-width: 35%;
+  position: relative;
+  margin: 0 auto;
+}
+.dlt-btn {
+  visibility: hidden;
   position: absolute;
+  top: -8px !important;
+  right: -8px !important;
+  z-index: 10;
+}
+.artist-img-cont:hover .dlt-btn {
+  visibility: visible;
+}
+.trash-icon {
   right: -5px;
   top: -5px;
+  position: absolute;
   visibility: hidden;
-  z-index: 1;
+  z-index: 9;
 }
 
 .art-img:hover .trash-icon {
   visibility: visible;
-}
-
-.artist-img {
-  max-height: 12rem;
-  max-width: 50%;
 }
 </style>

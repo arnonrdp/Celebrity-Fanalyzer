@@ -76,6 +76,7 @@ const pageRef = ref(null)
 const skeletons = 6
 
 const statuses = [
+  { label: 'All', value: 'All' },
   { label: 'Top', value: 'Top' },
   { label: 'New', value: 'New' },
   { label: 'Active', value: 'Active' },
@@ -97,6 +98,10 @@ const today = new Date()
 
 const computedPromptsByStatus = computed(() => {
   let filteredPrompts = promptStore.getPrompts || []
+
+  if (status.value === 'All') {
+    filteredPrompts
+  }
 
   if (status.value === 'Top') {
     filteredPrompts = filteredPrompts

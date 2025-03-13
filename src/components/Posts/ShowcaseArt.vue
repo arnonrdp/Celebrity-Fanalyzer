@@ -21,10 +21,11 @@
         class="flex justify-center q-pa-none cursor-pointer"
         :key="index"
         :name="index"
+        style="max-height: 450px"
       >
         <q-img class="rounded-borders" fit="contain" :src="art" @click.stop="openDialog = true" />
       </q-carousel-slide>
-      <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none" :name="showcase?.arts.length">
+      <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none" :name="showcase?.arts.length" style="max-height: 450px">
         <q-img v-if="showcase.artist.photo" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
         <p class="col-sm-6 col-xs-12 flex items-center q-pa-md">{{ showcase.artist.info }}</p>
       </q-carousel-slide>
@@ -50,7 +51,7 @@
       <q-carousel-slide v-if="showcase.artist.info" class="q-pa-none" :name="showcase?.arts.length">
         <q-img v-if="!!showcase.artist.photo" class="col-sm-6 col-xs-12 rounded-borders" :src="showcase.artist.photo" />
         <div class="col-sm-6 col-xs-12 flex items-center q-px-xl q-py-md">
-          <p style="border: 1px solid gray; width: 100%; border-radius: 8px; padding: 8px">{{ showcase.artist.info }}</p>
+          <p style="width: 100%; padding: 8px">{{ showcase.artist.info }}</p>
         </div>
       </q-carousel-slide>
     </q-carousel>

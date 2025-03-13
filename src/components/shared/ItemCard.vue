@@ -89,10 +89,11 @@ function goToUrl() {
 }
 
 .winner-amount-wrapper {
-  position: absolute;
+  width: 6rem;
   bottom: 8px;
   left: 8px;
   z-index: 2;
+  margin-top: 5px;
 }
 
 .winner-amount {
@@ -119,13 +120,6 @@ function goToUrl() {
 .trophy-icon {
   color: gold;
   font-size: 1.2rem;
-}
-
-@media screen and (max-width: 600px) {
-  .winner-amount-wrapper {
-    left: 16px;
-    bottom: 16px;
-  }
 }
 
 .article-card-item {

@@ -15,7 +15,7 @@
         @clickComments="tab = 'comments'"
         @openPromptDialog="openPromptDialog"
       />
-      <TheEntries :entries="entries" ref="entriesRef" :promptDate="prompt?.date" :has-winner="prompt?.hasWinner" />
+      <TheEntries :entries="entries" ref="entriesRef" :ownPrompt="ownPrompt" :promptDate="prompt?.date" :has-winner="prompt?.hasWinner" />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="anthrogram" class="bg-white">
@@ -86,6 +86,10 @@ const prompt = computed(() => {
 
 const entries = computed(() => {
   return entryStore.getEntries?.filter((entry) => entry.prompt?.id === prompt.value?.id)
+})
+
+const ownPrompt = computed(() => {
+  return prompt.value?.author.uid === userStore.getUser.uid
 })
 
 const onScroll = () => {

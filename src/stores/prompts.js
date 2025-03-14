@@ -160,11 +160,14 @@ export const usePromptStore = defineStore('prompts', {
           const data = doc.data()
 
           if ((!data.publicationDate || data.publicationDate <= formattedDate) && (!data.endDate || data.endDate >= formattedDate)) {
-            activePrompts.push({ id: doc.id, ...data })
+            if (data.author.id !== userStore.getUser.uid) {
+              activePrompts.push({ id: doc.id, ...data })
+            }
           }
         })
 
         this._activePrompts = activePrompts
+
         return activePrompts
       } catch (error) {
         console.error('Error fetching prompts:', error)

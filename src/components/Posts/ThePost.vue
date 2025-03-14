@@ -49,10 +49,10 @@
             </q-badge>
           </div>
         </div>
-        <div class="flex justify-between items-center">
+        <div class="flex justify-between items-center no-wrap">
           <h1 class="text-bold text-h5" data-test="post-title">{{ post?.title }}</h1>
 
-          <div v-if="isPrompt && post.rewardAmount" class="reward-container flex items-center">
+          <div v-if="isPrompt && post.rewardAmount" class="reward-container flex items-center no-wrap">
             <span class="trophy-icon">🏆</span>
             <span class="reward-amount">{{ post?.rewardAmount ?? 0 }}$</span>
           </div>

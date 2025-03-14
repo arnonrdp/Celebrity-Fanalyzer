@@ -56,14 +56,8 @@
           <span v-if="_currentPrompt?.escrowId || props.row?.isWinner">
             <q-btn
               class="payment-buttons"
-              v-if="
-                userStore.isEditorOrAbove &&
-                props.row.isWinner !== true &&
-                _currentPrompt?.isTreated !== true &&
-                _currentPrompt?.hasWinner !== true
-              "
+              v-if="props.row.isWinner !== true && _currentPrompt?.isTreated !== true && _currentPrompt?.hasWinner !== true"
               color="black"
-              :disable="userStore.getUser.role !== 'Admin'"
               flat
               size="sm"
               icon="toggle_off"

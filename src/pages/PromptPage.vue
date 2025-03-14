@@ -15,7 +15,13 @@
         @clickComments="tab = 'comments'"
         @openPromptDialog="openPromptDialog"
       />
-      <TheEntries :entries="entries" ref="entriesRef" :ownPrompt="ownPrompt" :promptDate="prompt?.date" :has-winner="prompt?.hasWinner" />
+      <TheEntries
+        :entries="entries"
+        ref="entriesRef"
+        :ownPrompt="ownPrompt"
+        :promptDate="prompt?.date ? prompt.date : prompt.id"
+        :has-winner="prompt?.hasWinner"
+      />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="anthrogram" class="bg-white">

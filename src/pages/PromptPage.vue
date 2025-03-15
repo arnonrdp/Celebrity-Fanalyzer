@@ -15,7 +15,13 @@
         @clickComments="tab = 'comments'"
         @openPromptDialog="openPromptDialog"
       />
-      <TheEntries :entries="entries" ref="entriesRef" :promptDate="prompt?.date" :has-winner="prompt?.hasWinner" />
+      <TheEntries
+        :entries="entries"
+        ref="entriesRef"
+        :ownPrompt="ownPrompt"
+        :promptDate="prompt?.date ? prompt.date : prompt.id"
+        :has-winner="prompt?.hasWinner"
+      />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
     <q-tab-panel name="anthrogram" class="bg-white">
@@ -74,8 +80,8 @@ const prompt = computed(() => {
     ?.sort((a, b) => a.id - b.id)
     ?.find((prompt) => {
       switch (route.name) {
-        case 'year-month':
-          return prompt.date === params.value.year + '-' + params.value.month
+        // case 'year-month':
+        //   return prompt.date === params.value.year + '-' + params.value.month
         case 'slug':
           return prompt.slug?.includes(params.value.slug)
         default:
@@ -86,6 +92,10 @@ const prompt = computed(() => {
 
 const entries = computed(() => {
   return entryStore.getEntries?.filter((entry) => entry.prompt?.id === prompt.value?.id)
+})
+
+const ownPrompt = computed(() => {
+  return prompt.value?.author.uid === userStore.getUser.uid
 })
 
 const onScroll = () => {

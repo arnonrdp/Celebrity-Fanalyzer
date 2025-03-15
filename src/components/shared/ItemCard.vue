@@ -19,12 +19,25 @@
           {{ item.title?.length > 40 ? item.title.substring(0, 40) + '...' : item.title }}
         </h2>
 
-        <p v-if="item.description" class="q-my-none text-body2 text-secondary">
-          {{ item?.date ? formatMonthYear(item?.date) : dayMonthYear(item.created) }} &nbsp;•&nbsp;
-          {{ giveReadingTime(item.description) }} min read
-        </p>
+        <div v-if="item.description" class="q-my-none text-body2 text-secondary">
+          <p v-if="item.publicationDate && item.endDate">
+            {{ `${formatPublicationDate(item.publicationDate)} - ${formatPublicationDate(item.endDate)}` }}&nbsp;•&nbsp;
+            {{ giveReadingTime(item.description) }} min read
+          </p>
+          <p v-else>
+            {{ item?.date ? formatMonthYear(item?.date) : dayMonthYear(item.created) }} &nbsp;•&nbsp;
+            {{ giveReadingTime(item.description) }} min read
+          </p>
+        </div>
         <div v-if="item.categories">
           <q-badge v-for="(item, i) of item.categories" class="q-mx-xs" :key="i" rounded>{{ item }}</q-badge>
+        </div>
+        <!-- v-if="item.winnerAmount" -->
+        <div class="winner-amount-wrapper" v-if="item.rewardAmount">
+          <div class="winner-amount">
+            <span class="trophy-icon">🏆</span>
+            <span>{{ item?.rewardAmount ?? 0 }}$</span>
+          </div>
         </div>
       </router-link>
     </div>
@@ -39,13 +52,12 @@
         @click="goToUrl()"
       />
     </router-link>
-    <!-- TODO: Add 'Selected for you' and two more buttons according to mockup -->
   </article>
 </template>
 
 <script setup>
 import CampaignCard from '../Advertiser/CampaignCard.vue'
-import { dayMonthYear, formatMonthYear } from 'src/utils/date'
+import { dayMonthYear, formatMonthYear, formatPublicationDate } from 'src/utils/date'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -55,14 +67,8 @@ const props = defineProps({
 })
 
 function giveReadingTime(text, wordsPerMinute = 200) {
-  // Calculate the number of words in the text
   const wordCount = text.split(/\s+/).length
-
-  // Calculate the reading time in minutes
-  const readingTimeInMinutes = wordCount / wordsPerMinute
-
-  // Round up the reading time to the nearest integer
-  return Math.ceil(readingTimeInMinutes)
+  return Math.ceil(wordCount / wordsPerMinute)
 }
 
 function goToUrl() {
@@ -80,6 +86,40 @@ function goToUrl() {
   top: 7%;
   left: 90%;
   z-index: 3;
+}
+
+.winner-amount-wrapper {
+  width: 6rem;
+  bottom: 8px;
+  left: 8px;
+  z-index: 2;
+  margin-top: 5px;
+}
+
+.winner-amount {
+  background-color: #003366;
+  padding: 8px 12px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  color: white;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.winner-amount:hover {
+  transform: scale(1.1);
+  box-shadow: 0 8px 12px rgba(0, 0, 0, 0.4);
+}
+
+.trophy-icon {
+  color: gold;
+  font-size: 1.2rem;
 }
 
 .article-card-item {

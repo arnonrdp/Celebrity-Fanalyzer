@@ -16,7 +16,13 @@
         <q-input data-text="ether-amount" v-model="maticAmount" label="Price in pol" readonly></q-input>
         <q-card-actions align="right">
           <q-btn color="primary" label="Cancel" v-close-popup />
-          <q-btn label="deposit fund" :disable="!usdAmount" color="green" data-test="confirm-deposit-fund" type="submit" />
+          <q-btn
+            :label="props.promptCardUsed ? 'deposit & submit prompt' : 'deposit fund'"
+            :disable="!usdAmount"
+            color="green"
+            data-test="confirm-deposit-fund"
+            type="submit"
+          />
         </q-card-actions>
       </q-form>
     </q-card-section>
@@ -35,11 +41,12 @@ const errorStore = useErrorStore()
 
 const promptStore = usePromptStore()
 
-const emit = defineEmits(['hideDialog'])
+const emit = defineEmits(['hideDialog', 'paymentDetails'])
 
 const props = defineProps({
   walletAddress: { type: String, required: true },
-  prompt: { type: Object }
+  prompt: { type: Object },
+  promptCardUsed: { type: Boolean, default: false }
 })
 
 const _walletAddress = ref('')
@@ -77,7 +84,9 @@ async function onSubmit(event) {
         _prompt.value.escrowId = result.events[0].args.escrowId
         const payload = {
           promptId: _prompt.value.id,
-          escrowId: result.events[0].args.escrowId
+          escrowId: result.events[0].args.escrowId,
+          paymentStatus: 'Payment successful',
+          rewardAmount: usdAmount.value
         }
         await promptStore
           .updateEscrowId(payload)
@@ -91,8 +100,18 @@ async function onSubmit(event) {
             $q.loading.hide()
             emit('hideDialog')
           })
+      } else if (props.promptCardUsed) {
+        $q.notify({ type: 'info', message: 'Fund deposited successfully' })
+        emit('paymentDetails', {
+          escrowId: result.events[0].args.escrowId,
+          paymentStatus: 'Payment successful',
+          rewardAmount: usdAmount.value
+        })
+        $q.loading.hide()
+        emit('hideDialog')
       } else {
         $q.notify({ type: 'negative', message: 'Prompt should not be null' })
+        $q.loading.hide()
         emit('hideDialog')
       }
     } else {

@@ -45,6 +45,11 @@ const routes = [
         component: () => import('pages/EntryPage.vue')
       },
       {
+        path: ':year(\\d{4})/:month(\\d{2})/:day(\\d{2})/:id',
+        component: () => import('pages/EntryPage.vue')
+      },
+
+      {
         path: 'fan/:username',
         component: () => import('pages/PublicProfilePage.vue')
       },

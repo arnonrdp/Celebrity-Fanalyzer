@@ -13,7 +13,10 @@ import {
   setDoc,
   Timestamp,
   updateDoc,
-  where
+  where,
+  limit,
+  startAfter,
+  orderBy
 } from 'firebase/firestore'
 import { deleteObject, ref } from 'firebase/storage'
 import { defineStore } from 'pinia'
@@ -54,7 +57,10 @@ export const useEntryStore = defineStore('entries', {
     _tab: 'post',
     entryDialog: {},
     userRelatedEntries: [],
-    _loadedEntries: []
+    _loadedEntries: [],
+    loadCount: 5,
+    _lastVisibleEntry: null,
+    showLastVisible: true
   }),
 
   // persist: true,
@@ -64,7 +70,7 @@ export const useEntryStore = defineStore('entries', {
     resetEntries: (state) => (state._entries = undefined),
     isLoading: (state) => state._isLoading,
     tab: (state) => state._tab,
-    getUserRelatedEntries: (state) => state._userRelatedEntries,
+    getUserRelatedEntries: (state) => state.userRelatedEntries,
     getLoadedEntries: (state) => state._loadedEntries
   },
 
@@ -89,15 +95,28 @@ export const useEntryStore = defineStore('entries', {
       }
     },
 
-    async fetchUserRelatedEntries(userId) {
+    async fetchUserRelatedEntries(userId, pagination = false) {
       const userStore = useUserStore()
 
       try {
         this._isLoading = true
 
         const userDocRef = doc(db, 'users', userId)
-        const querySnapshot = await getDocs(query(collection(db, 'entries'), where('author', '==', userDocRef)))
+
+        const conditions = [where('author', '==', userDocRef)]
+        if (pagination) {
+          conditions.push(limit(this.loadCount), orderBy('created', 'desc'))
+        }
+        if (this._lastVisibleEntry) {
+          conditions.push(startAfter(this._lastVisibleEntry))
+        }
+
+        const querySnapshot = await getDocs(query(collection(db, 'entries'), ...conditions))
         const entries = snapshotDocs(querySnapshot.docs)
+
+        if (pagination) {
+          this._lastVisibleEntry = querySnapshot.docs[querySnapshot.docs.length - 1]
+        }
 
         for (const entry of entries) {
           const promptId = entry.prompt.id
@@ -111,7 +130,11 @@ export const useEntryStore = defineStore('entries', {
             entry.escrowId = prompt?.escrowId
           }
         }
-        this._userRelatedEntries = entries
+
+        this.userRelatedEntries = pagination ? [...this.userRelatedEntries, ...entries] : entries
+        if (entries.length < 5 && pagination) {
+          this.showLastVisible = false
+        }
       } catch (e) {
         console.error(e)
       } finally {
@@ -147,13 +170,19 @@ export const useEntryStore = defineStore('entries', {
       }
     },
 
-    async fetchEntryBySlug(slug) {
+    async fetchEntryBySlug(slug, ignoreId = false) {
       const userStore = useUserStore()
       const promptStore = usePromptStore()
       const id = slug.slice(1, -3).replace('/', '-').replace('/', '')
       try {
         this._isLoading = true
-        const querySnapshot = await getDocs(query(collection(db, 'entries'), or(where('slug', '==', slug), where('id', '==', id))))
+        const conditions = [where('slug', '==', slug), where('id', '==', id)]
+        if (ignoreId) {
+          conditions.pop()
+        }
+        const querySnapshot = await getDocs(
+          query(collection(db, 'entries'), conditions.length > 1 ? or(...conditions) : where('slug', '==', slug))
+        )
         const entry = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))[0]
         if (entry.author.id) {
           entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))

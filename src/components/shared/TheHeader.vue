@@ -8,12 +8,14 @@
           Fanalyzer
         </span>
       </q-toolbar-title>
+
       <q-toolbar-title v-if="backButton || title || subtitle">
         <q-btn v-if="backButton" color="secondary" flat icon="arrow_back_ios" round size="sm" @click="goBack" data-test="back-btn" />
         <b class="text-secondary" data-test="title">{{ title }}</b>
         <q-icon v-if="subtitle" name="arrow_forward" color="secondary" class="q-px-sm" />
         <span v-if="subtitle" class="text-secondary">{{ subtitle }}</span>
       </q-toolbar-title>
+
       <NotificationBubble v-if="notificationButton && userStore.isAuthenticated" />
       <q-btn
         v-if="feedbackButton && userStore.isAuthenticated"
@@ -27,7 +29,9 @@
       >
         <q-tooltip>Feedback</q-tooltip>
       </q-btn>
+
       <slot />
+
       <q-btn-dropdown
         v-if="userStore.isAuthenticated"
         auto-close
@@ -41,7 +45,7 @@
         size="1rem"
       >
         <q-list style="min-width: 100px">
-          <q-item data-test="create-prompt" v-if="userStore.isEditorOrAbove" clickable @click="openPromptDialog()">
+          <q-item data-test="create-prompt" clickable @click="openPromptDialog()">
             <q-item-section>New Prompt</q-item-section>
           </q-item>
           <q-item data-test="create-entry" clickable @click="openEntryDialog()">
@@ -53,6 +57,7 @@
         </q-list>
       </q-btn-dropdown>
     </q-toolbar>
+
     <q-toolbar v-if="searchInput">
       <q-toolbar-title>
         <q-input
@@ -71,7 +76,7 @@
         </q-input>
       </q-toolbar-title>
       <q-btn
-        :color="selectedDate ? 'primary' : 'secondary'"
+        :color="selectedDate || promptStore.filterOngoingCompetitions ? 'primary' : 'secondary'"
         class="q-mb-lg"
         data-test="filter-button"
         flat
@@ -128,6 +133,15 @@
               </template>
             </q-input>
           </div>
+
+          <div class="filter-section q-mt-md">
+            <q-checkbox
+              v-model="promptStore.filterOngoingCompetitions"
+              label="Ongoing Competitions"
+              color="primary"
+              data-test="ongoing-competitions-checkbox"
+            />
+          </div>
         </q-card-section>
 
         <q-card-actions class="row filter-actions flex-space-between">
@@ -143,7 +157,7 @@
 </template>
 
 <script setup>
-import { useUserStore, useEntryStore, useErrorStore } from 'src/stores'
+import { useUserStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import NotificationBubble from './NotificationBubble.vue'
@@ -161,6 +175,7 @@ defineProps({
   subtitle: { type: String, required: false },
   title: { type: String, required: false }
 })
+
 const emit = defineEmits(['updateSearchDate', 'update:modelValue'])
 
 const router = useRouter()
@@ -171,9 +186,11 @@ const advertise = ref({})
 const userStore = useUserStore()
 const entryStore = useEntryStore()
 const errorStore = useErrorStore()
+const promptStore = usePromptStore()
 
 const openFilter = ref(false)
 const selectedDate = ref('')
+const filterOngoingCompetitions = ref(false)
 const dataKey = ref(Date.now())
 
 function goBack() {
@@ -200,17 +217,23 @@ function openAdvertiseDialog(props) {
 }
 
 function applyFilters() {
-  const hasLoadedEntry = entryStore.checkPromptRelatedEntry(selectedDate.value)
-  if (!hasLoadedEntry) {
-    entryStore.fetchEntryByPrompts(selectedDate.value)
+  if (selectedDate.value) {
+    const hasLoadedEntry = entryStore.checkPromptRelatedEntry(selectedDate.value)
+    if (!hasLoadedEntry) {
+      entryStore.fetchEntryByPrompts(selectedDate.value)
+    }
+    entryStore.fetchEntryByPrompts(selectedDate.value).catch((error) => errorStore.throwError(error))
   }
-  entryStore.fetchEntryByPrompts(selectedDate.value).catch((error) => errorStore.throwError(error))
-  emit('updateSearchDate', selectedDate.value)
+  const filters = {
+    date: selectedDate.value
+  }
+  emit('updateSearchDate', filters)
 }
 
 function clearFilters() {
   selectedDate.value = ''
-  emit('updateSearchDate', selectedDate.value)
+  promptStore.filterOngoingCompetitions = false
+  emit('updateSearchDate', {})
 }
 
 function onUpdateMonth() {
@@ -236,6 +259,7 @@ defineExpose({
   openEntryDialog
 })
 </script>
+
 <style scoped>
 .filter-card {
   width: 400px;

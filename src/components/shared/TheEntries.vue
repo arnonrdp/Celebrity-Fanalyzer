@@ -29,7 +29,7 @@ import { ref, computed } from 'vue'
 import { useQuasar } from 'quasar'
 import { useRouter } from 'vue-router'
 
-const props = defineProps(['entries', 'promptDate', 'hasWinner'])
+const props = defineProps(['entries', 'promptDate', 'hasWinner', 'ownPrompt'])
 
 const entryStore = useEntryStore()
 const userStore = useUserStore()
@@ -39,7 +39,7 @@ const $q = useQuasar()
 
 const showAddEntry = computed(() => {
   const entry = props.entries?.find((e) => e.author.uid === userStore.getUserId)
-  return !entry && !props.hasWinner
+  return !entry && !props.hasWinner && !props.ownPrompt
 })
 
 async function openEntryDialog() {

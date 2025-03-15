@@ -11,34 +11,29 @@
     <q-page ref="pageRef" class="q-pa-md">
       <q-scroll-area :thumb-style="{ display: 'none' }" style="height: 3.8rem">
         <q-btn-toggle
-          v-model="category"
+          v-model="status"
           class="q-my-sm"
           color="white"
           no-caps
           no-wrap
-          :options="computedCategories"
+          :options="statuses"
           rounded
           text-color="secondary"
           unelevated
+          @click="promptStore.filterOngoingCompetitions = false"
         />
       </q-scroll-area>
-      <q-tab-panels animated swipeable v-model="category">
-        <q-tab-panel v-for="(categ, i) in computedCategories" class="panel" :key="i" :name="categ.value">
-          <section class="card-items-wrapper" v-if="!promptStore.getPrompts?.length && promptStore.isLoading">
+      <q-tab-panels v-model="status" animated swipeable>
+        <q-tab-panel v-for="(option, i) in statuses" :key="i" :name="option.value" class="panel">
+          <section class="card-items-wrapper" v-if="!computedPromptsByStatus.length && promptStore.isLoading">
             <ArticleSkeleton v-for="n in skeletons" :key="n" />
           </section>
           <TransitionGroup name="prompt" tag="div" class="card-items-wrapper" v-else>
-            <ItemCard
-              data-test="item-card"
-              v-for="prompt in combinedItems"
-              :key="prompt?.id"
-              v-show="prompt?.categories.includes(categ.value) || category === 'All' || prompt?.isAdd"
-              :item="prompt"
-              :link="prompt?.slug"
-            />
+            <ItemCard v-for="prompt in combinedItems" :key="prompt?.id" :item="prompt" :link="prompt?.slug" />
           </TransitionGroup>
         </q-tab-panel>
       </q-tab-panels>
+
       <TransitionGroup tag="div">
         <div v-if="(searchDate || search) && computedEntries?.length > 0">
           <TheEntries :entries="computedEntries" />
@@ -64,7 +59,7 @@ import ItemCard from 'src/components/shared/ItemCard.vue'
 import TheEntries from 'src/components/shared/TheEntries.vue'
 import TheHeader from 'src/components/shared/TheHeader.vue'
 import { useAdvertiseStore, useEntryStore, useErrorStore, usePromptStore } from 'src/stores'
-import { computed, ref, onMounted, watch, onUnmounted, watchEffect } from 'vue'
+import { computed, ref, onMounted, watch, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const entryStore = useEntryStore()
@@ -73,11 +68,21 @@ const promptStore = usePromptStore()
 const advertiseStore = useAdvertiseStore()
 
 const category = ref('All')
+const status = ref('Active')
 const router = useRouter()
 const search = ref('')
 const searchDate = ref('')
 const pageRef = ref(null)
 const skeletons = 6
+
+const statuses = [
+  { label: 'All', value: 'All' },
+  { label: 'Top', value: 'Top' },
+  { label: 'New', value: 'New' },
+  { label: 'Active', value: 'Active' },
+  { label: 'Upcoming', value: 'Upcoming' },
+  { label: 'Winner Selected', value: 'Winner Selected' }
+]
 
 const loadMorePrompts = async () => {
   if (!promptStore.isLoading && promptStore._hasMore) {
@@ -88,6 +93,61 @@ const loadMorePrompts = async () => {
     }
   }
 }
+
+const today = new Date()
+
+const computedPromptsByStatus = computed(() => {
+  let filteredPrompts = promptStore.getPrompts || []
+
+  if (status.value === 'All') {
+    filteredPrompts = filteredPrompts.filter((prompt) => prompt.escrowId || prompt.isWinner || prompt.hasWinner)
+  }
+
+  if (status.value === 'Top') {
+    filteredPrompts = filteredPrompts
+      .filter((prompt) => prompt.rewardAmount && !prompt.isWinner && !prompt.hasWinner)
+      .sort((a, b) => (b.rewardAmount || 0) - (a.rewardAmount || 0))
+  }
+
+  if (status.value === 'Active' || promptStore.filterOngoingCompetitions) {
+    filteredPrompts = filteredPrompts
+      .filter((prompt) => {
+        const publicationDate = prompt.publicationDate ? new Date(prompt.publicationDate) : null
+        const endDate = prompt.endDate ? new Date(prompt.endDate) : null
+
+        return (
+          prompt.escrowId &&
+          (!publicationDate || !endDate || (publicationDate <= today && endDate >= today)) &&
+          !prompt.isWinner &&
+          !prompt.hasWinner
+        )
+      })
+      .sort((a, b) => new Date(a.publicationDate || 0) - new Date(b.publicationDate || 0))
+  }
+
+  if (status.value === 'Upcoming') {
+    filteredPrompts = filteredPrompts.filter((prompt) => {
+      const publicationDate = new Date(prompt.publicationDate)
+      return prompt.escrowId && publicationDate > today
+    })
+  }
+
+  if (status.value === 'Winner Selected') {
+    filteredPrompts = filteredPrompts.filter((prompt) => prompt.isWinner || prompt.hasWinner)
+  }
+
+  if (status.value === 'New') {
+    filteredPrompts = filteredPrompts
+      .filter((prompt) => {
+        const publicationDate = new Date(prompt.publicationDate)
+        const endDate = new Date(prompt.endDate)
+        return prompt.escrowId && publicationDate <= today && endDate >= today && !prompt.isWinner && !prompt.hasWinner
+      })
+      .sort((a, b) => new Date(b.publicationDate) - new Date(a.publicationDate))
+  }
+
+  return filteredPrompts
+})
 
 const computedCategories = computed(() => {
   const allPromptCategories = computedPrompts.value?.flatMap(({ categories }) => categories)
@@ -107,7 +167,7 @@ const computedPrompts = computed(() => {
   return promptStore.getPrompts
     ? promptStore.getPrompts
         .filter((item) => {
-          const prompt = [item.title, item.description, item.author?.displayName, item.id, ...item.categories]
+          const prompt = [item.title, item.description, item.author?.displayName, item.id]
 
           const matchesDate = searchDate.value ? searchDate.value.slice(0, 7) === item.id : true
           const matchesSearch = search.value ? prompt.some((str) => str?.toLowerCase().includes(search.value.toLowerCase())) : true
@@ -125,7 +185,7 @@ const computedEntries = computed(() => {
 })
 
 const combinedItems = computed(() => {
-  const items = [...computedPrompts.value]
+  const items = [...computedPromptsByStatus.value]
   const adsToAdd = computedAdvertises?.value.filter((ad) => !items.some((item) => item.id === ad.id))
 
   const result = []
@@ -140,7 +200,7 @@ const combinedItems = computed(() => {
   return result
 })
 
-const showHasMore = computed(() => promptStore._hasMore && category.value === 'All' && !search.value && !searchDate.value)
+const showHasMore = computed(() => promptStore._hasMore && !search.value && !searchDate.value)
 
 const updateSearchDate = (value) => {
   searchDate.value = value
@@ -154,11 +214,19 @@ watch(search, async (newSearch) => {
   }
 })
 
-watch(searchDate, async () => {
+watch(searchDate, async (val) => {
   if (!promptStore.isLoading && promptStore._totalPrompts !== promptStore.getPrompts.length && promptStore.hasMore) {
     await promptStore.fetchPrompts(true)
   }
 })
+watch(
+  () => promptStore.filterOngoingCompetitions,
+  (val) => {
+    if (val) {
+      status.value = 'Active'
+    }
+  }
+)
 
 onMounted(async () => {
   await promptStore.getTotalPromptsCount()

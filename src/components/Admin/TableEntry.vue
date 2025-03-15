@@ -2,14 +2,14 @@
   <q-table
     flat
     :hide-bottom="!!rows.length"
-    :class="{ 'entries-table ': !userStore.isEditorOrAbove }"
+    :class="{ 'entries-table ': !userStore.isEditorOrAbove && !chilledEntryTable }"
     :columns="!!rows.length ? columns : []"
     :filter="filter"
     :bordered="!userStore.isEditorOrAbove"
-    :hide-header="userStore.isEditorOrAbove"
+    :hide-header="userStore.isEditorOrAbove || chilledEntryTable"
     :pagination="pagination"
     :rows="rows"
-    :title="!userStore.isEditorOrAbove ? 'Manage Entries' : ''"
+    :title="!userStore.isEditorOrAbove && !chilledEntryTable ? 'My Entries' : ''"
     no-data-label="No entries found."
     data-test="entry-table"
     :loading="entryStore.isLoading || promptStore.isLoading"
@@ -56,14 +56,8 @@
           <span v-if="_currentPrompt?.escrowId || props.row?.isWinner">
             <q-btn
               class="payment-buttons"
-              v-if="
-                userStore.isEditorOrAbove &&
-                props.row.isWinner !== true &&
-                _currentPrompt?.isTreated !== true &&
-                _currentPrompt?.hasWinner !== true
-              "
+              v-if="props.row.isWinner !== true && _currentPrompt?.isTreated !== true && _currentPrompt?.hasWinner !== true"
               color="black"
-              :disable="userStore.getUser.role !== 'Admin'"
               flat
               size="sm"
               icon="toggle_off"
@@ -228,6 +222,7 @@ const props = defineProps({
   rows: { type: Array, required: true, default: () => [] },
   currentPrompt: { type: Object },
   loadedEntries: { type: Array, default: () => [] },
+  chilledEntryTable: { type: Boolean, required: false, default: false },
   maxWidth: { type: Number, required: false }
 })
 
@@ -283,8 +278,10 @@ const displayCrytptoTransactionDialog = ref({})
 const pagination = { sortBy: 'date', descending: true, rowsPerPage: 0 }
 
 function onEditDialog(props) {
+  const i = props.id.lastIndexOf('T')
+  const promptId = props.id.slice(0, i)
   entry.value = props
-  entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === props.id.split('T')[0])
+  entry.value.prompt = promptStore.getPrompts?.find((prompt) => prompt.id === props.id.split('T')[0] || prompt.id === promptId)
   entry.value.dialog = true
 }
 

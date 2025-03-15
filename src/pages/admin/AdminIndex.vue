@@ -8,7 +8,7 @@
           data-test="posts-tab"
           name="prompts"
           icon="view_list"
-          :label="userStore.isEditorOrAbove ? 'Prompts & Entries' : 'Entries'"
+          :label="'Prompts & Entries'"
           :to="{ name: 'admin.prompts' }"
         />
         <q-route-tab

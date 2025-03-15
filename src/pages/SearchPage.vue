@@ -100,7 +100,7 @@ const computedPromptsByStatus = computed(() => {
   let filteredPrompts = promptStore.getPrompts || []
 
   if (status.value === 'All') {
-    filteredPrompts
+    filteredPrompts = filteredPrompts.filter((prompt) => prompt.escrowId || prompt.isWinner || prompt.hasWinner)
   }
 
   if (status.value === 'Top') {

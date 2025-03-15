@@ -6,6 +6,7 @@ import {
   getDoc,
   getDocs,
   limit,
+  onSnapshot,
   or,
   orderBy,
   query,
@@ -63,7 +64,8 @@ export const usePromptStore = defineStore('prompts', {
     _totalPrompts: undefined,
     _lastVisible: null,
     _hasMore: true,
-    filterOngoingCompetitions: false
+    filterOngoingCompetitions: false,
+    unsubscribe: null
   }),
 
   getters: {
@@ -142,7 +144,7 @@ export const usePromptStore = defineStore('prompts', {
       }
     },
 
-    async fetchActivePrompts() {
+    async activePromptsListener() {
       const userStore = useUserStore()
       this._isLoading = true
       const today = new Date()
@@ -153,22 +155,22 @@ export const usePromptStore = defineStore('prompts', {
         const queryConstraints = [where('hasWinner', '==', null), where('escrowId', '!=', null)]
 
         queryRef = query(queryRef, ...queryConstraints)
-        const querySnapshot = await getDocs(queryRef)
 
-        const activePrompts = []
-        querySnapshot.forEach((doc) => {
-          const data = doc.data()
+        onSnapshot(queryRef, (querySnapshot) => {
+          const activePrompts = []
 
-          if ((!data.publicationDate || data.publicationDate <= formattedDate) && (!data.endDate || data.endDate >= formattedDate)) {
-            if (data.author.id !== userStore.getUser.uid) {
-              activePrompts.push({ id: doc.id, ...data })
+          querySnapshot.forEach((doc) => {
+            const data = doc.data()
+
+            if ((!data.publicationDate || data.publicationDate <= formattedDate) && (!data.endDate || data.endDate >= formattedDate)) {
+              if (data.author.id !== userStore.getUser.uid) {
+                activePrompts.push({ id: doc.id, ...data })
+              }
             }
-          }
+          })
+
+          this._activePrompts = activePrompts
         })
-
-        this._activePrompts = activePrompts
-
-        return activePrompts
       } catch (error) {
         console.error('Error fetching prompts:', error)
       } finally {

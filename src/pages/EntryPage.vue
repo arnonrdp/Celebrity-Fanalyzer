@@ -23,9 +23,11 @@
         title="Entry Page"
         style="padding-bottom: 7rem"
         :isEntry="true"
-        :showEdit="!prompt?.hasWinner && userStore.getUserId === entry.author.uid"
+        :showEdit="checkEditDeletePermissions"
+        :showDelete="checkEditDeletePermissions"
         @clickComments="tab = 'comments'"
         @openEntryDialog="openEntryDialog"
+        @onEntryDelete="openEntryDeleteDialog"
       />
     </q-tab-panel>
     <!-- Panel 2: Anthrogram -->
@@ -48,6 +50,30 @@
   >
     <EntryCard v-bind="editEntry" @hideDialog="closeEntryDialog" />
   </q-dialog>
+  <q-dialog v-model="deleteEntryDialog.show" data-test="entry-delete-dialog">
+    <q-card>
+      <q-card-section class="q-pb-none">
+        <h6 class="q-my-sm">Delete Entry?</h6>
+      </q-card-section>
+      <q-card-section>
+        <span class="q-ml-sm">
+          Are you sure you want to delete the entry:
+          <b>{{ deleteEntryDialog.entry.title }}</b>
+          ?
+        </span>
+      </q-card-section>
+      <q-card-actions align="right">
+        <q-btn color="primary" flat label="Cancel" v-close-popup />
+        <q-btn
+          color="negative"
+          data-test="confirm-delete-entry"
+          flat
+          label="Delete"
+          @click="onDeleteEntry(deleteEntryDialog.entry.id, deleteEntryDialog.entry.prompt.id, deleteEntryDialog.entry.showcase.arts)"
+        />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
 </template>
 
 <script setup>
@@ -68,6 +94,7 @@ import {
 import { startTracking, stopTracking } from 'src/utils/activityTracker'
 import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
 
 const router = useRouter()
 
@@ -81,7 +108,9 @@ const promptStore = usePromptStore()
 const userStore = useUserStore()
 const tab = ref(entryStore.tab)
 const editEntry = ref({})
+const deleteEntryDialog = ref({})
 const prompt = ref({})
+const $q = useQuasar()
 
 let entryId
 let entryAuthor
@@ -112,6 +141,10 @@ onMounted(async () => {
   startTracking()
 })
 
+function checkEditDeletePermissions() {
+  return !prompt.value?.hasWinner && (userStore.getUserId === entry.value.author.uid || userStore.isEditorOrAbove)
+}
+
 onUnmounted(async () => {
   const stats = stopTracking()
   try {
@@ -129,6 +162,27 @@ async function openEntryDialog() {
   editEntry.value = entry.value
   editEntry.value.prompt = prompt
   editEntry.value.dialog = true
+}
+
+function openEntryDeleteDialog() {
+  deleteEntryDialog.value.show = true
+  deleteEntryDialog.value.entry = entry.value
+}
+
+function onDeleteEntry(entryId, promptId, arts) {
+  entryStore
+    .deleteEntry(entryId, arts)
+    .then(() => {
+      setTimeout(() => {
+        router.push({ path: '/search' })
+      }, 1000)
+    })
+    .then(() => $q.notify({ type: 'positive', message: 'Entry deleted' }))
+    .catch((error) => {
+      $q.notify({ type: 'negative', message: 'Error deleting entry' })
+      errorStore.throwError(error, 'Error deleting entry')
+    })
+  deleteEntryDialog.value.show = false
 }
 
 function closeEntryDialog(slug) {

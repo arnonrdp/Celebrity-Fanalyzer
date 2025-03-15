@@ -33,24 +33,6 @@ describe('Admin Prompt & Entry', () => {
     cy.location('pathname').should('eq', '/')
   })
 
-  it('should redirect to login and display a notification when attempting to create an entry without logging in', () => {
-    // Clear local storage
-    cy.clearLocalStorage()
-
-    cy.visit('/month')
-    // Ensure the "Create Entry" button exists and is visible
-    cy.get('[data-test="create-entry"]').should('exist').and('be.visible')
-
-    // Click the "Create entry" button without login
-    cy.get('[data-test="create-entry"]').click()
-
-    // Assert that the user is redirected to the login page
-    cy.url().should('include', '/profile')
-
-    // Assert the notification message
-    cy.get('.q-notification').should('be.visible').and('contain.text', 'Please log in to create a new entry')
-  })
-
   it('Cleanup: Delete Existing "Cypress Tester" Prompts Before Test', () => {
     // Search for the prompt
     cy.get('[data-test="input-search"]', { timeout: 20000 }).type('Cypress Tester')
@@ -158,6 +140,24 @@ describe('Admin Prompt & Entry', () => {
 
     //Check the Prompt is submitted successfully
     cy.get('.q-notification__message').contains('Prompt successfully submitted')
+  })
+
+  it('should redirect to login and display a notification when attempting to create an entry without logging in', () => {
+    // Clear local storage
+    cy.clearLocalStorage()
+
+    cy.visit('/hello-world-')
+    // Ensure the "Create Entry" button exists and is visible
+    cy.get('[data-test="create-entry"]').should('exist').and('be.visible')
+
+    // Click the "Create entry" button without login
+    cy.get('[data-test="create-entry"]').click()
+
+    // Assert that the user is redirected to the login page
+    cy.url().should('include', '/profile')
+
+    // Assert the notification message
+    cy.get('.q-notification').should('be.visible').and('contain.text', 'Please log in to create a new entry')
   })
 
   it('should open the dialog when clicking the add button, display correct content, and close on hideDialog event', () => {

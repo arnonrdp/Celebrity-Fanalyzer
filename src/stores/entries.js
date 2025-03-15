@@ -91,6 +91,7 @@ export const useEntryStore = defineStore('entries', {
 
     async fetchUserRelatedEntries(userId) {
       const userStore = useUserStore()
+      const promptStore = usePromptStore()
 
       try {
         this._isLoading = true
@@ -101,6 +102,9 @@ export const useEntryStore = defineStore('entries', {
 
         for (const entry of entries) {
           const promptId = entry.prompt.id
+          entry.prompt = await promptStore.fetchPromptById(promptId)
+          const promptArray = await promptStore.fetchPromptById(promptId)
+          entry.prompt = promptArray[0] || {}
           if (entry.author.id) {
             entry.author = userStore.getUserById(entry.author.id) || (await userStore.fetchUser(entry.author.id))
           }
@@ -322,7 +326,7 @@ export const useEntryStore = defineStore('entries', {
         }
         this._entries = this._entries?.filter((entry) => entry.id !== entryId)
       } catch (error) {
-        await errorStore.throwError(error, 'Error deleting entry')
+        await errorStore.throwError(error, 'Error deleting entry stroes')
       }
       this._isLoading = false
     },
